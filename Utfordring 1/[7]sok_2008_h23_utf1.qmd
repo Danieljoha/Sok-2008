@@ -242,3 +242,24 @@ Forklar hvordan økt egenbetaling påvirker helsetjenesteforbruk og øker effekt
 ### 1.2.3
 
 Diskuter fordelingseffekter av økte egenandeler.
+
+\newpage
+
+# Referanser
+
+::: {#refs}
+:::
+
+\clearpage
+
+\appendix
+
+\section {Appendix 1.1 KI bruk} \\label{appendix:appendix1}
+
+\
+\
+blub
+
+\section {Appendix 1.2 KI bruk}
+
+blub
