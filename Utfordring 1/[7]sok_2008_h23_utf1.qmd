@@ -24,8 +24,13 @@ csl: norsk-apa-manual.csl
 crossref: 
   lof-title: "Figurliste"
   fig-title: "Figur"
+  lot-title: "Tabelliste"
+  tbl-title: "Tabell"
 header-includes:
   - \usepackage{wrapfig}
+  - \usepackage{subcaption}
+nocite: |
+  @*
 ---
 
 ```{=tex}
