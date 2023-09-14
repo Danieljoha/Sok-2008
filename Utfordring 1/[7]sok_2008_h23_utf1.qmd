@@ -5,26 +5,26 @@ author: "Kandidatnummer 7, SOK-2008 Høst 2023"
 date: last-modified 
 date-format: "DD-MM-YYYY"
 editor: visual
-toc: true
-toc-title: "Innholdsfortegnelse."
 abstract: "hvis jeg skal skrive noe"
+toc-title: "Innholdsfortegnelse."
 format: 
   pdf:
     geometry:
       - top=20mm
       - left=20mm
       - heightrounded
-    lof: true
     fontsize: 12pt
     documentclass: scrartcl
     papersize: a4
 echo: false
+warning: false
+message: false
 bibliography: references.bib
 csl: norsk-apa-manual.csl
 crossref: 
-  lof-title: "Figurliste"
+  lof-title: "Figur liste"
   fig-title: "Figur"
-  lot-title: "Tabelliste"
+  lot-title: "Tabell liste"
   tbl-title: "Tabell"
 header-includes:
   - \usepackage{wrapfig}
@@ -36,12 +36,15 @@ nocite: |
 
 ```{=tex}
 \newpage
-\listoffigures
-\listoftables
 \renewcommand*{\figureautorefname}{Figur}
 \renewcommand*{\tableautorefname}{Tabell}
+\tableofcontents
+\listoffigures
+\listoftables
 \newpage
 ```
+
+
 ```{r, warning=FALSE, message=FALSE}
 rm(list=ls()) 
 library(tidyverse)
@@ -111,10 +114,15 @@ plot <- df_04544 %>%
   mutate(år = as.numeric(år)) %>% 
   ggplot()+
   geom_line(aes(x=år, y=value, color=kjønn))+
-  theme_bw()
+  theme_bw() +
+  theme(legend.position = "bottom")+
+  labs(x="", y="Arbeidstimer per uke", caption="SSB tabell 04544", color="") +
+  scale_x_continuous(expand = c(0, 0), n.breaks = 14, guide = guide_axis(angle=45))
 ggsave("df_04544.png", width=8, height=4)
 
 ```
+
+
 ```{=tex}
 \begin{figure}[h]
     \centering
@@ -148,7 +156,7 @@ plot <- df112 %>%
   scale_fill_manual(values = c("Nordic" = "red", "Other" = "lightblue")) +
   theme_bw()+
   theme(legend.position = "none")+
-  labs(y="Female employment rate %", x="") +
+  labs(y="Female employment rate %", x="", caption="Data fra OECD, tilgang gitt fra Andrea Mannberg") +
   scale_x_discrete(guide = guide_axis(angle=45))
 
 ggsave("df112.png", width=8, height=4)
@@ -172,7 +180,7 @@ plot <- df112 %>%
   scale_fill_manual(values = c("Nordic" = "red", "Other" = "lightblue")) +
   theme_bw()+
   theme(legend.position = "none")+
-  labs(y="Female employment rate %", x="")+
+  labs(y="Female employment rate %", x="", caption="Data fra OECD, tilgang gitt fra Andrea Mannberg")+
   scale_x_discrete(guide = guide_axis(angle=45))
 
 ggsave("df1122.png", width=8, height=4)
@@ -216,10 +224,11 @@ test <- eurostat %>%
 
 plot <- test %>% 
   filter(!geo %in% c("EA18: Euro area - 18 countries (2014)", "EA19: Euro area - 19 countries  (2015-2022)", "EU27_2020: European Union - 27 countries (from 2020)", "EU28: European Union - 28 countries (2013-2020)")) %>% 
-  ggplot(aes(y=govexp, x=householdexp)) +
+  ggplot(aes(x=householdexp, y=govexp)) +
   geom_point()+
-  labs(y="HF1: Government schemes and compulsory contributory health care financing schemes", x="HF3: Household out-of-pocket payment")+
-  geom_smooth(method=lm, se=FALSE)
+  labs(x="Household out-of-pocket payment", y="Government schemes and compulsory contributory health care financing schemes", caption = "Eurostat hlth_sha11_hf")+
+  geom_smooth(method=lm, se=FALSE) +
+  theme_bw()
 
 ggsave("test.png", width=8, height=4)
 
@@ -234,40 +243,6 @@ ggsave("test.png", width=8, height=4)
 \end{figure}
 ```
 
-
-```{r}
-test1 <- test %>% 
-  filter(!geo %in% c("EA18: Euro area - 18 countries (2014)", 
-                     "EA19: Euro area - 19 countries  (2015-2022)", 
-                     "EU27_2020: European Union - 27 countries (from 2020)", 
-                     "EU28: European Union - 28 countries (2013-2020)"))
-plot <- test1 %>% 
-ggplot(aes(x=govexp, y=householdexp)) +
-  geom_point() +
-  labs(x="HF1: Government schemes and compulsory contributory health care financing schemes", 
-       y="HF3: Household out-of-pocket payment") +
-  geom_smooth(method=lm, se=FALSE) +
-  geom_point(data = test %>% 
-               filter(geo %in% c("EA18: Euro area - 18 countries (2014)", 
-                                 "EA19: Euro area - 19 countries  (2015-2022)", 
-                                 "EU27_2020: European Union - 27 countries (from 2020)", 
-                                 "EU28: European Union - 28 countries (2013-2020)")),
-             aes(x=govexp, y=householdexp, color=geo))+
-  theme(legend.position = "bottom")
-
-
-ggsave("test1.png", width=8, height=4)
-
-```
-
-```{=tex}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{test1.png}
-    \caption{df1}
-    \label{fig:fig5}
-\end{figure}
-```
 
 Lag et punktdiagram som viser sammenhengen mellom andelen av egenbetalinger (Household out-of-pocket payment, på x-aksen) og helsetjenesteforbruk pr. innbygger (Purchasing power standard (PPS) per inhabitant, på y-aksen) i europeiske land. Forklar sammenhengen mellom variablene du ser i figuren og gjør også rede for om det er korrelasjon mellom variablene i dette datasettet.
 
