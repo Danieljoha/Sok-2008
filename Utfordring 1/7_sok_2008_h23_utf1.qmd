@@ -1,0 +1,373 @@
+---
+title: "Utfordring 1"
+subtitle: "Fakultet for biovitenskap, fiskeri og økonomi."
+author: "Kandidatnummer 7, SOK-2008 Høst 2023"
+date: last-modified 
+date-format: "DD-MM-YYYY"
+editor: visual
+abstract: "hvis jeg skal skrive noe"
+toc-title: "Innholdsfortegnelse."
+format: 
+  pdf:
+    geometry:
+      - top=20mm
+      - left=20mm
+      - heightrounded
+    fontsize: 12pt
+    documentclass: scrartcl
+    papersize: a4
+echo: false
+warning: false
+message: false
+bibliography: references.bib
+csl: norsk-apa-manual.csl
+crossref: 
+  lof-title: "Figur liste"
+  fig-title: "Figur"
+  lot-title: "Tabell liste"
+  tbl-title: "Tabell"
+header-includes:
+  - \usepackage{wrapfig}
+  - \usepackage{subcaption}
+  - \usepackage[utf8]{inputenc}
+nocite: |
+  @*
+---
+
+```{=tex}
+\newpage
+\renewcommand*{\figureautorefname}{Figur}
+\renewcommand*{\tableautorefname}{Tabell}
+\tableofcontents
+\listoffigures
+\listoftables
+\newpage
+```
+```{r, warning=FALSE, message=FALSE}
+rm(list=ls()) 
+library(tidyverse)
+library(lubridate)
+library(rjstat)
+library(janitor)
+library(gdata)
+library(httr)
+library(jsonlite)
+library(ggrepel)
+```
+
+## Utfordring 1.1
+
+### 1.1.1
+
+```{r}
+url04544 <- "https://data.ssb.no/api/v0/no/table/04544/"
+
+query <- '{
+  "query": [
+    {
+      "code": "Kjonn",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "0",
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "code": "Yrkesstatus",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "00",
+          "01",
+          "02",
+          "03"
+        ]
+      }
+    }
+  ],
+  "response": {
+    "format": "json-stat2"
+  }
+}'
+
+df_04544 <- url04544 %>%
+  POST(body = query, encode = "json") %>% 
+  content("text") %>%
+  fromJSONstat() %>%
+  as_tibble()
+
+
+rm(query, url04544)
+```
+
+Statistisk Sentral Byrå (SSB) har [data](https://data.ssb.no/api/v0/no/table/04544/) (tabell 04544) som viser gjennomsnittlig antall arbeidstimer blant menn og kvinner i Norge. Bruk disse dataene for å vise **empiriske kjønnsforskjeller i valg av arbeidstimer for menn og kvinner**. Forklar dine empiriske observasjoner **ved bruk av økonomisk teori**. Din forklaring skal inneholde grafisk illustrasjon av teorien. NB: i denne oppgaven skal du fokusere på forskjeller mellom menn og kvinner.
+
+```{r}
+plot <- df_04544 %>% 
+  filter(statistikkvariabel == "Faktisk arbeidstid (timer per uke)") %>% 
+  filter(kjønn != "Begge kjønn") %>%
+  filter(yrkesstatus == "I alt") %>% 
+  mutate(år = as.numeric(år)) %>% 
+  ggplot()+
+  geom_line(aes(x=år, y=value, color=kjønn))+
+  theme_bw() +
+  theme(legend.position = "bottom")+
+  labs(x="", y="Arbeidstimer per uke", caption="SSB tabell 04544", color="") +
+  scale_x_continuous(expand = c(0, 0), n.breaks = 14, guide = guide_axis(angle=45))
+ggsave("df_04544.png", width=8, height=4)
+
+```
+
+```{=tex}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{df_04544.png}
+    \caption{df1}
+    \label{fig:fig1}
+\end{figure}
+```
+
+
+```{python}
+from IPython.display import display, Math, Latex
+import numpy as np
+from matplotlib import pyplot as plt
+import sympy as sp
+
+
+
+x_1, x_2, a, b, U_0 =sp.symbols("x_1 x_2 a b U_0", real=True, positive=True)
+U=x_1**a*x_2**b
+# Løser for x_2
+x_2_ind_sol=sp.solve(U-U_0,x_2)[0]
+
+indiff_x_2=sp.lambdify( (U_0,a,b,x_1), x_2_ind_sol)
+
+
+
+def budsjett(M, p1, p2, x1):
+    return M/p2 - p1*x1/p2
+
+
+p_1, p_2, m =sp.symbols("p_1 p_2 m", real=True, positive=True)
+
+# budsjett
+bud=p_1*x_1+p_2*x_2
+
+# Beregne MSB
+
+msb = sp.diff(U, x_1)/sp.diff(U,x_2)
+x_2_rel=sp.solve(msb-p_1/p_2,x_2)[0]
+budsj=bud.subs(x_2,x_2_rel)
+x_1_eq= sp.solve(budsj-m,x_1)[0]
+
+x_2_eq= x_2_rel.subs(x_1,x_1_eq)
+
+U_max=U.subs([(x_1,x_1_eq),(x_2,x_2_eq)])
+
+
+
+
+
+x=np.linspace(0.001,100, 100)
+
+
+fig, ax = plt.subplots()
+
+ax.set_ylabel('$c$', loc='top', rotation=0)
+ax.set_xlabel('$l$', loc='right')
+ax.set(xlim=(0,100))
+ax.set(ylim=(0,100))
+ax.spines['top'].set_color('none')
+ax.spines['right'].set_color('none')            
+
+# plott funksjonen
+
+ax.plot(x, indiff_x_2(10,.4,.25,x), label='$U_{0}$')
+ax.plot(x, indiff_x_2(8,.4,.25,x), label='$U_{1}$')
+ax.plot(x, indiff_x_2(12,.4,.25,x), label='$U_{2}$')
+
+ax.plot(x, budsjett(2000, 25, 40, x), label = 'budsjett')
+
+nytte = U_max.subs([(a,.4),(b,.25),(m,2000),(p_1,25),(p_2,40)])
+x_1_num = x_1_eq.subs([(a,.4),(b,.25),(m,2000),(p_1,25),(p_2,40)])
+x_2_num = x_2_eq.subs([(a,.4),(b,.25),(m,2000),(p_1,25),(p_2,40)])
+
+
+ax.vlines(x_1_num,0,x_2_num, color='grey',ls='dashed')
+ax.hlines(x_2_num,0,x_1_num, color='grey',ls='dashed')
+
+ax.scatter(x_1_num, x_2_num, color="black", label="krysspunkt")
+
+
+
+# tittel
+ax.set_title('figur indiff')
+
+#vis navnene:
+ax.legend()
+
+
+plt.show()
+```
+
+"Familiearbeidere" refererer til personer som jobber i en familiebedrift, men som ikke mottar en fast avtalt lønn. I stedet kan de motta andre former for kompensasjon, som kost og losji, eller de kan jobbe i bytte mot fremtidige fordeler, som arv eller eierskap i virksomheten.
+
+Det vi kan se at i yrker utenom familie arbeidere så velger kvinner langt mye færre arbeidstimer enn menn.
+
+grunnen til dette kan vi se i boka.
+
+### 1.1.2
+
+```{r}
+df112 <- read_delim("https://raw.githubusercontent.com/uit-sok-2008-h23/uit-sok-2008-h23.github.io/main/assets/women.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE)
+```
+
+[Dette datasettet](https://github.com/uit-sok-2008-h23/uit-sok-2008-h23.github.io/blob/main/assets/women.csv) inneholder informasjon om generøsiteten av foreldrepermisjonsordninger og mødres yrkesdeltakelse i 24 OECD land i 2021. For å gjøre ulike lands rettigheter sammenlignbare presenteres permisjonsordningenes gunstighet ved hjelp av «full rate equivalent» (uker med 100% støtte), hvilket tilsvarer foreldrepermisjonens varighet i uker multiplisert med utbetalingssats i prosent av gjennomsnittlig inntekt. Variabelen «tot_full_rate» beskriver sysselsettingsraten i befolkningen (menn og kvinner). **Bruk datasettet til å lage to diagrammer som viser sammenhengen mellom lengde på betalt foreldrepermisjon og yrkesdeltakelse blant kvinner**. I det ene diagrammet skal du bruke data som beskriver sysselsetting blant kvinner med barn i alderen 0-2 år (fem_emp_rate_0_2), og det andre skal du bruke data på kvinner med barn i alderen 6-14 år (fem_emp_rate_6_14). Diskuter, basert på disse diagrammene og økonomisk teori, følgende påstand: «Gunstige permisjonsordninger ved fødsel sikrer høy yrkesdeltakelse blant kvinner på lang sikt».
+
+```{r}
+
+plot <- df112 %>% 
+  ggplot(aes(x=tot_full_rate, y=fem_emp_rate_0_2))+
+  geom_point() +
+  geom_text_repel(aes(label=country))+
+  theme_bw()+
+  theme(legend.position = "none")+
+  labs(x="Antall uker permisjon", y="Kvinner i arbeid 0-2", caption="Data fra OECD, tilgang gitt fra Andrea Mannberg")+
+  scale_x_continuous()+
+  scale_y_continuous(limits=c(0, 100), labels=scales::percent_format(scale=1), expand= c(0,0))
+
+
+ggsave("pointfig0_2.png", width=8, height=4)
+
+```
+
+
+
+
+```{r}
+
+plot <- df112 %>% 
+  ggplot(aes(x=tot_full_rate, y=fem_emp_rate_6_14))+
+  geom_point()+
+  geom_text_repel(aes(label=country))+
+  theme_bw()+
+  theme(legend.position = "none")+
+  labs(x="Antall uker permisjon", y="Kvinner i arbeid 6-14", caption="Data fra OECD, tilgang gitt fra Andrea Mannberg")+
+  scale_x_continuous()+
+  scale_y_continuous(limits = c(0, 100), labels=scales::percent_format(scale=1), expand= c(0,0))
+
+
+ggsave("pointfig6_14.png", width=8, height=4)
+
+```
+
+```{=tex}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{pointfig0_2.png}
+    \label{fig:fig2}
+\end{figure}
+```
+
+
+
+```{=tex}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{pointfig6_14.png}
+    \label{fig:fig3}
+\end{figure}
+```
+
+
+
+
+Når man har lang foreldre permisjon så kommer kvinner raskere i arbeid, dette  viser jeg i ligning og økonomisk teori som vises i boken. 
+
+Når man har rett på samme jobb igjen så går du raskere i arbeid igjen siden din reservasjonslønn ikke synker raskt, og din jobb vil da hyre deg inn på den litt lavere lønnen da tidligere
+
+
+her ender inntektseffekten til å dominere som foresaker de til å bli lengere i arbeid men like mange kommer tilbake i arbeid
+
+
+### 1.1.3
+
+Forklar hvorfor høy yrkesdeltakelse blant norske kvinner og høye barnetall er viktig for at den norske velferdsmodellen skal være økonomisk bærekraftig.
+
+## Utfordring 1.2
+
+I en tid med økende helsetjenestekostnader og begrensede offentlige budsjetter vurderer mange europeiske land økte egenandeler som et verktøy for å påvirke etterspørselen etter helsetjenester og redusere atferdsrisiko. Sammenligning av nivåene av brukerbetaling (egenandel) for ulike helsetjenester mellom land kan gi innsikt i hvordan brukerbetaling påvirker forbruket av helse-tjenester. Bruk datasettet hlth_sha11_hf fra Eurostat for år 2019 i din besvarelse.
+
+### 1.2.1
+
+```{r}
+
+eurostat <- read_csv("https://ec.europa.eu/eurostat/api/dissemination/sdmx/3.0/data/dataflow/ESTAT/HLTH_SHA11_HF/1.0?compress=false&format=csvdata&formatVersion=2.0&lang=en&labels=both", show_col_types = FALSE)
+
+eurostat <- eurostat %>%
+  select(-c(1:3)) %>%
+  rename(unit = 1, scheme = 2, geo = 3, time = 4, value = 5, flag = 6) %>% 
+  filter(time == "2019", unit == "PPS_HAB: Purchasing power standard (PPS) per inhabitant", scheme %in% c("HF1: Government schemes and compulsory contributory health care financing schemes" , "HF3: Household out-of-pocket payment"))
+  
+
+test <- eurostat %>% 
+  pivot_wider(names_from = "scheme", values_from="value") %>% 
+  rename(govexp = 5, householdexp = 6)
+  
+
+
+plot <- test %>% 
+  filter(!geo %in% c("EA18: Euro area - 18 countries (2014)", "EA19: Euro area - 19 countries  (2015-2022)", "EU27_2020: European Union - 27 countries (from 2020)", "EU28: European Union - 28 countries (2013-2020)")) %>% 
+  ggplot(aes(x=householdexp, y=govexp)) +
+  geom_point()+
+  labs(x="Household out-of-pocket payment", y="Government schemes and compulsory contributory health care financing schemes", caption = "Eurostat hlth_sha11_hf")+
+  geom_smooth(method=lm, se=FALSE) +
+  theme_bw()
+
+ggsave("test.png", width=8, height=4)
+
+```
+
+```{=tex}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{test.png}
+    \caption{eurostat}
+    \label{fig:fig4}
+\end{figure}
+```
+Lag et punktdiagram som viser sammenhengen mellom andelen av egenbetalinger (Household out-of-pocket payment, på x-aksen) og helsetjenesteforbruk pr. innbygger (Purchasing power standard (PPS) per inhabitant, på y-aksen) i europeiske land. Forklar sammenhengen mellom variablene du ser i figuren og gjør også rede for om det er korrelasjon mellom variablene i dette datasettet.
+
+
+
+### 1.2.2
+
+Forklar hvordan økt egenbetaling påvirker helsetjenesteforbruk og øker effektiviteten **ved å bruke økonomisk teori om atferdsrisiko** du har lært på kursets forelesninger og videoforelesninger. Bruk diagram(mer) i din besvarelse.
+
+### 1.2.3
+
+Diskuter fordelingseffekter av økte egenandeler.
+
+\newpage
+
+# Referanser
+
+::: {#refs}
+:::
+
+\clearpage
+
+\section {Appendix 1.1 KI bruk}
+
+\
+\
+blub
+
+\section {Appendix 1.2 KI bruk}
+
+blub
