@@ -99,13 +99,6 @@ df_04544 <- url04544 %>%
   fromJSONstat() %>%
   as_tibble()
 
-
-rm(query, url04544)
-```
-
-Statistisk Sentral Byrå (SSB) har [data](https://data.ssb.no/api/v0/no/table/04544/) (tabell 04544) som viser gjennomsnittlig antall arbeidstimer blant menn og kvinner i Norge. Bruk disse dataene for å vise **empiriske kjønnsforskjeller i valg av arbeidstimer for menn og kvinner**. Forklar dine empiriske observasjoner **ved bruk av økonomisk teori**. Din forklaring skal inneholde grafisk illustrasjon av teorien. NB: i denne oppgaven skal du fokusere på forskjeller mellom menn og kvinner.
-
-```{r}
 plot <- df_04544 %>% 
   filter(statistikkvariabel == "Faktisk arbeidstid (timer per uke)") %>% 
   filter(kjønn != "Begge kjønn") %>%
@@ -118,8 +111,12 @@ plot <- df_04544 %>%
   labs(x="", y="Arbeidstimer per uke", caption="SSB tabell 04544", color="") +
   scale_x_continuous(expand = c(0, 0), n.breaks = 14, guide = guide_axis(angle=45))
 ggsave("df_04544.png", width=8, height=4)
-
+rm(query, url04544)
 ```
+
+
+
+Statistisk Sentral Byrå (SSB) har [data](https://data.ssb.no/api/v0/no/table/04544/) (tabell 04544) som viser gjennomsnittlig antall arbeidstimer blant menn og kvinner i Norge. Bruk disse dataene for å vise **empiriske kjønnsforskjeller i valg av arbeidstimer for menn og kvinner**. 
 
 ```{=tex}
 \begin{figure}[h]
@@ -131,6 +128,29 @@ ggsave("df_04544.png", width=8, height=4)
 ```
 
 
+Forklar dine empiriske observasjoner **ved bruk av økonomisk teori**. Din forklaring skal inneholde grafisk illustrasjon av teorien. NB: i denne oppgaven skal du fokusere på forskjeller mellom menn og kvinner.
+
+
+Grafen viser en tydelig nedgang i menns ukentlige arbeidstimer fra 1996 til 2022, mens kvinners arbeidstimer viser en svak stigning over samme periode. Forskjellen mellon menns og kvinners arbeidstimer ser ut til å minske over tid. 
+
+
+
+Teoretisk Forklaring:
+
+Overtidspremien:
+Menns nedgang i arbeidstimer kan være assosiert med en økning i overtid og dermed et ønske om å unngå å jobbe overtid, den økte lønnen fra overtid gir en inntekts og subsitisjonseffekt som leder til at fritid blir mer verdt og menn da velger færre arbeidstimer. Dette kan også forklare hvorfor menns timer har gått ned til rundt 36 timer, noe som er nærmere en typisk 35-timers arbeidsuke i mange europeiske land.
+
+Deltid og Deltakelse:
+Den svake økningen i kvinners arbeidstimer kan være et resultat av en økning i tilgjengelighet og aksept av deltidsarbeid. Tilgjengeligheten av deltidsarbeid tillate personer med en høyere reservasjonslønn å oppnå en relativt gunstig kombinasjon av arbeid og fritid.
+
+
+Arbeidstilbud og Arbeidsetterspørsel:
+Som nevnt i teksten, kan produksjonsfunksjonen til bedrifter være separabel mellom antall arbeidere og timer per arbeider. Dette kan føre til at bedrifter foretrekker å ha færre arbeidere som jobber flere timer (opptil et visst punkt) i stedet for flere arbeidere som jobber færre timer.
+
+
+Endringene i menns og kvinners arbeidstimer over tid kan forklares ved en kombinasjon av individuelle valg (drevet av preferanser for fritid og inntekt), arbeidsgivers valg (drevet av produksjonskostnader og etterspørsel etter arbeidskraft), og institusjonelle faktorer (som tilgjengeligheten av deltidsarbeid og overtidsreguleringer).
+
+
 ```{python}
 from IPython.display import display, Math, Latex
 import numpy as np
@@ -139,12 +159,12 @@ import sympy as sp
 
 
 
-x_1, x_2, a, b, U_0 =sp.symbols("x_1 x_2 a b U_0", real=True, positive=True)
-U=x_1**a*x_2**b
+c, l, a, b, U_0 =sp.symbols("c l a b U_0", real=True, positive=True)
+U=c**a*l**b
 # Løser for x_2
-x_2_ind_sol=sp.solve(U-U_0,x_2)[0]
+x_2_ind_sol=sp.solve(U-U_0,l)[0]
 
-indiff_x_2=sp.lambdify( (U_0,a,b,x_1), x_2_ind_sol)
+indiff_x_2=sp.lambdify( (U_0,a,b,c), x_2_ind_sol)
 
 
 
@@ -155,21 +175,32 @@ def budsjett(M, p1, p2, x1):
 p_1, p_2, m =sp.symbols("p_1 p_2 m", real=True, positive=True)
 
 # budsjett
-bud=p_1*x_1+p_2*x_2
+bud=p_1*c+p_2*l
 
 # Beregne MSB
 
-msb = sp.diff(U, x_1)/sp.diff(U,x_2)
-x_2_rel=sp.solve(msb-p_1/p_2,x_2)[0]
-budsj=bud.subs(x_2,x_2_rel)
-x_1_eq= sp.solve(budsj-m,x_1)[0]
+msb = sp.diff(U, c)/sp.diff(U,l)
+x_2_rel=sp.solve(msb-p_1/p_2,l)[0]
+budsj=bud.subs(l,x_2_rel)
+x_1_eq= sp.solve(budsj-m,c)[0]
 
-x_2_eq= x_2_rel.subs(x_1,x_1_eq)
+x_2_eq= x_2_rel.subs(c,x_1_eq)
 
-U_max=U.subs([(x_1,x_1_eq),(x_2,x_2_eq)])
+U_max=U.subs([(c,x_1_eq),(l,x_2_eq)])
+
+nytte = U_max.subs([(a,.4),(b,.25),(m,2000),(p_1,25),(p_2,40)])
+x_1_num = x_1_eq.subs([(a,.4),(b,.25),(m,2000),(p_1,25),(p_2,40)])
+x_2_num = x_2_eq.subs([(a,.4),(b,.25),(m,2000),(p_1,25),(p_2,40)])
 
 
+intersection_eq = indiff_x_2(8, .4, .25, c) - budsjett(2000, 25, 40, c)
 
+c_intersection = sp.solve(intersection_eq, c)
+
+l_value_at_intersection_1 = indiff_x_2(8, .4, .25, c_intersection[0])
+l_value_at_intersection_2 = indiff_x_2(8, .4, .25, c_intersection[1])
+
+c_intersection, (l_value_at_intersection_1, l_value_at_intersection_2)
 
 
 x=np.linspace(0.001,100, 100)
@@ -177,48 +208,81 @@ x=np.linspace(0.001,100, 100)
 
 fig, ax = plt.subplots()
 
-ax.set_ylabel('$c$', loc='top', rotation=0)
-ax.set_xlabel('$l$', loc='right')
+ax.set_ylabel('Konsum $c$', loc='top', rotation=0)
+ax.set_xlabel('Fritid $l$', loc='right')
 ax.set(xlim=(0,100))
-ax.set(ylim=(0,100))
+ax.set(ylim=(0,60))
 ax.spines['top'].set_color('none')
-ax.spines['right'].set_color('none')            
+ax.spines['right'].set_color('none')   
+
+         
+#no numbers on axis
+ax.xaxis.set_major_formatter(plt.NullFormatter())
+ax.yaxis.set_major_formatter(plt.NullFormatter())
+#no ticks on x or y axis
+ax.xaxis.set_ticks_position('none')
+ax.yaxis.set_ticks_position('none')
+
+
 
 # plott funksjonen
+ax.plot(x, indiff_x_2(10,.4,.25,x))
+ax.plot(x, indiff_x_2(8,.4,.25,x))
+ax.plot(x, indiff_x_2(12,.4,.25,x))
 
-ax.plot(x, indiff_x_2(10,.4,.25,x), label='$U_{0}$')
-ax.plot(x, indiff_x_2(8,.4,.25,x), label='$U_{1}$')
-ax.plot(x, indiff_x_2(12,.4,.25,x), label='$U_{2}$')
+#i add annotations to the graph above each line where they end to the right
+ax.text(95, 7, '$U_0$', fontsize=12)
+ax.text(95, 3.2, '$U_1$', fontsize=12)
+ax.text(95, 15, '$U_2$', fontsize=12)
 
-ax.plot(x, budsjett(2000, 25, 40, x), label = 'budsjett')
 
-nytte = U_max.subs([(a,.4),(b,.25),(m,2000),(p_1,25),(p_2,40)])
-x_1_num = x_1_eq.subs([(a,.4),(b,.25),(m,2000),(p_1,25),(p_2,40)])
-x_2_num = x_2_eq.subs([(a,.4),(b,.25),(m,2000),(p_1,25),(p_2,40)])
+
+x_budget = np.linspace(0, float(c_intersection[1]), 500)
+ax.plot(x_budget, budsjett(2000, 25, 40, x_budget), label='budsjett')
+
+ax.vlines(c_intersection[1],0,l_value_at_intersection_2, color='grey',ls='dashed') 
+
+
+
+
+ax.scatter(c_intersection[1], l_value_at_intersection_2, color="grey")  
+#under the scatter i write tex
+ax.text(c_intersection[1]-4, l_value_at_intersection_2-7, '$h = T$', fontsize=12)
+ax.hlines(l_value_at_intersection_2,0,c_intersection[1], color='grey',ls='dashed') 
+ax.text(l_value_at_intersection_2, 5, '$m = reservasjonslønn$', fontsize=12)
+
+
+#Budget line
+#ax.plot(x, budsjett(2000, 25, 40, x), label = 'budsjett')
+
+#on the left of the where the budget line crosses the y-axis i write w and i add a tick for it on the y-axis
+ax.text(-6, budsjett(2000, 25, 40, 0), '$-w$', fontsize=12)
+
+
 
 
 ax.vlines(x_1_num,0,x_2_num, color='grey',ls='dashed')
 ax.hlines(x_2_num,0,x_1_num, color='grey',ls='dashed')
 
-ax.scatter(x_1_num, x_2_num, color="black", label="krysspunkt")
+ax.scatter(x_1_num, x_2_num, color="black", label="Optimalt valg $h^*$")
 
-
-
+ax.scatter(c_intersection[1], l_value_at_intersection_2, color="darkblue", label="Bare fritid $h=T$")
 # tittel
-ax.set_title('figur indiff')
+ax.set_title('Likevekts valg av fritid og konsum')
+
 
 #vis navnene:
 ax.legend()
 
 
+#plt.show()
 plt.show()
 ```
 
-"Familiearbeidere" refererer til personer som jobber i en familiebedrift, men som ikke mottar en fast avtalt lønn. I stedet kan de motta andre former for kompensasjon, som kost og losji, eller de kan jobbe i bytte mot fremtidige fordeler, som arv eller eierskap i virksomheten.
+$$U(c,l)=c^{a}l^{b}$$
+Hvor $0<\alpha, \beta <1$ og $\alpha+\beta\leq1$ 
 
-Det vi kan se at i yrker utenom familie arbeidere så velger kvinner langt mye færre arbeidstimer enn menn.
 
-grunnen til dette kan vi se i boka.
 
 ### 1.1.2
 
@@ -228,6 +292,75 @@ df112 <- read_delim("https://raw.githubusercontent.com/uit-sok-2008-h23/uit-sok-
 ```
 
 [Dette datasettet](https://github.com/uit-sok-2008-h23/uit-sok-2008-h23.github.io/blob/main/assets/women.csv) inneholder informasjon om generøsiteten av foreldrepermisjonsordninger og mødres yrkesdeltakelse i 24 OECD land i 2021. For å gjøre ulike lands rettigheter sammenlignbare presenteres permisjonsordningenes gunstighet ved hjelp av «full rate equivalent» (uker med 100% støtte), hvilket tilsvarer foreldrepermisjonens varighet i uker multiplisert med utbetalingssats i prosent av gjennomsnittlig inntekt. Variabelen «tot_full_rate» beskriver sysselsettingsraten i befolkningen (menn og kvinner). **Bruk datasettet til å lage to diagrammer som viser sammenhengen mellom lengde på betalt foreldrepermisjon og yrkesdeltakelse blant kvinner**. I det ene diagrammet skal du bruke data som beskriver sysselsetting blant kvinner med barn i alderen 0-2 år (fem_emp_rate_0_2), og det andre skal du bruke data på kvinner med barn i alderen 6-14 år (fem_emp_rate_6_14). Diskuter, basert på disse diagrammene og økonomisk teori, følgende påstand: «Gunstige permisjonsordninger ved fødsel sikrer høy yrkesdeltakelse blant kvinner på lang sikt».
+
+
+
+
+
+Empiriske funn:
+Subsidiert barnepass
+Havnes og Mogstad (2011) Norge
+• Effekt på kvinners yrkesdeltakelse og barns
+humankapital
+• Kvinners yrkesdeltakelse økte
+• Barnenes utdanningsnivå økte
+Bauernschuster & Schlotter (2015) & Brillil et
+al (2016)
+• Tilgang til offentlig barnehage økte kvinners
+yrkesdeltakelse
+
+Empiriske funn: Foreldrepermisjon
+Rum (1998):
+• Rett til korte perioder med foreldrepermisjon:
+• + 3 – 4% sysselsetting blant kvinner.
+• Ingen effekt på lønn for kvinner
+• Rett til lengre perioder med foreldrepermisjon:
+• + 3 – 4% sysselsetting blant kvinner.
+• – 3% i lønn for kvinner.
+
+Empiriske funn: Foreldrepermisjon
+Baker & Milligan (2008)
+• Når foreldre-permisjonen øker fra å være
+kort (17-18 uker) til å være lang (19-70
+uker) øker sannsynligheten at kvinner går
+tilbake til samme arbeidsgivere.
+
+
+
+Empiriske funn: Foreldrepermisjon
+Hvor lang skal permisjonen være?
+• Dustman & Schönberg (2012) og Dahl et al
+(2016):
+• Lengre permisjon har…
+• ingen effekt på yrkesdeltakelse
+• ingen effekt på barnenes
+utdanningsnivå
+
+
+Empiriske funn: Pappa-perm
+Ekberg et al (2013) og Avdic & Karim (2018)
+• Menn tok ut mer permisjon (15 dager)
+• Kvinner tok ut mindre (25 dager)
+• Kvinner var fortsatt hjemme med syke
+barn
+• (Økt sannsynlighet for skilsmesse)
+Dunatchik & Özcan (2020) og Patnaik (2019)
+• Menn tok ut flere dager (50%)
+• Kvinner endret ikke sitt uttak
+• Menn deltok mere i husholdsarbeid og
+oppdragelse av barna.
+
+
+
+Konklusjoner fra empiriske studier?
+• Subsidiert barnepass ser ut å øke kvinners yrkesdeltakelse
+• Bidrag til å hand om barn hjemme ser ut å ha en negativ effekt på kvinners
+arbeidstilbud
+• Foreldrepermisjon som gir foreldre lovbestemt rett å beholde jobben…
+• Ser ut å ha en positiv effekt på kvinners arbeidskraftdeltagelse og sysselsettingsnivå
+• Kan ha negativ påvirkning på kvinners lønn
+• Pappa-perm øker fedres uttak av foreldreledighet. Andre effekter er uklare
+
 
 ```{r}
 
