@@ -282,7 +282,7 @@ plt.show()
 $$U(c,l)=c^{a}l^{b}$$
 Hvor $0<\alpha, \beta <1$ og $\alpha+\beta\leq1$ 
 
-
+ved bruk av denne ligningen så kan vi se kvinners valg av arbeidstimer og fritid. Ved å legge inn hvilken inntekt de ønsker dersom de er tvunget til fulltid eller deltid vil vi kunne se hvor mye de ønsker å jobbe. Vi vet at kvinner i større grad en menn jobber deltid.
 
 ### 1.1.2
 
