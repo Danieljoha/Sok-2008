@@ -135,6 +135,10 @@ Grafen viser en tydelig nedgang i menns ukentlige arbeidstimer fra 1996 til 2022
 
 
 
+Kvinner må jobbe mindre når de har fått barn. de bruker lengere tid til å komme tilbake i arbeid uten god barnepassordninger osv. 
+
+Kvinner får færre barn, så mer tid til arbeid
+
 Teoretisk Forklaring:
 
 Overtidspremien:
@@ -284,6 +288,9 @@ Hvor $0<\alpha, \beta <1$ og $\alpha+\beta\leq1$
 
 ved bruk av denne ligningen så kan vi se kvinners valg av arbeidstimer og fritid. Ved å legge inn hvilken inntekt de ønsker dersom de er tvunget til fulltid eller deltid vil vi kunne se hvor mye de ønsker å jobbe. Vi vet at kvinner i større grad en menn jobber deltid.
 
+
+
+
 ### 1.1.2
 
 ```{r}
@@ -294,6 +301,7 @@ df112 <- read_delim("https://raw.githubusercontent.com/uit-sok-2008-h23/uit-sok-
 [Dette datasettet](https://github.com/uit-sok-2008-h23/uit-sok-2008-h23.github.io/blob/main/assets/women.csv) inneholder informasjon om generøsiteten av foreldrepermisjonsordninger og mødres yrkesdeltakelse i 24 OECD land i 2021. For å gjøre ulike lands rettigheter sammenlignbare presenteres permisjonsordningenes gunstighet ved hjelp av «full rate equivalent» (uker med 100% støtte), hvilket tilsvarer foreldrepermisjonens varighet i uker multiplisert med utbetalingssats i prosent av gjennomsnittlig inntekt. Variabelen «tot_full_rate» beskriver sysselsettingsraten i befolkningen (menn og kvinner). **Bruk datasettet til å lage to diagrammer som viser sammenhengen mellom lengde på betalt foreldrepermisjon og yrkesdeltakelse blant kvinner**. I det ene diagrammet skal du bruke data som beskriver sysselsetting blant kvinner med barn i alderen 0-2 år (fem_emp_rate_0_2), og det andre skal du bruke data på kvinner med barn i alderen 6-14 år (fem_emp_rate_6_14). Diskuter, basert på disse diagrammene og økonomisk teori, følgende påstand: «Gunstige permisjonsordninger ved fødsel sikrer høy yrkesdeltakelse blant kvinner på lang sikt».
 
 
+Legger inn matte og figur som viser endring på hvordan reservasjonslønnen synker med tiden og dersom de har krav på jobb tidlig så vil de gå raskere tilbake i arbeid.
 
 
 
@@ -428,9 +436,19 @@ Når man har rett på samme jobb igjen så går du raskere i arbeid igjen siden 
 her ender inntektseffekten til å dominere som foresaker de til å bli lengere i arbeid men like mange kommer tilbake i arbeid
 
 
+
+
+
+
 ### 1.1.3
 
 Forklar hvorfor høy yrkesdeltakelse blant norske kvinner og høye barnetall er viktig for at den norske velferdsmodellen skal være økonomisk bærekraftig.
+
+Vise befolkningspyramide.
+
+Folk må betale pensjon og velferdsordninger til kommende generasjon osv.
+
+
 
 ## Utfordring 1.2
 
@@ -477,14 +495,27 @@ ggsave("test.png", width=8, height=4)
 Lag et punktdiagram som viser sammenhengen mellom andelen av egenbetalinger (Household out-of-pocket payment, på x-aksen) og helsetjenesteforbruk pr. innbygger (Purchasing power standard (PPS) per inhabitant, på y-aksen) i europeiske land. Forklar sammenhengen mellom variablene du ser i figuren og gjør også rede for om det er korrelasjon mellom variablene i dette datasettet.
 
 
+Det er noe svak korrelasjon som vist. skal putte inn output fra R^2 og slikt. 
+
+Det vi ser er at hvis pps øker, så øker også egenbetalingen. Dette kan være fordi folk har mer penger og dermed bruker mer på helsetjenester. Eller fordi den økte egenbetalingen reduserer bruk av helsetjenester, slik at problemer blir større over tid og folk må bruke mer penger på helsetjenester som øker kostnaden til staten. 
+
 
 ### 1.2.2
 
 Forklar hvordan økt egenbetaling påvirker helsetjenesteforbruk og øker effektiviteten **ved å bruke økonomisk teori om atferdsrisiko** du har lært på kursets forelesninger og videoforelesninger. Bruk diagram(mer) i din besvarelse.
 
+Seminar fra mikko. Tegn figuren som vist med dødvektstap når folk bruker flere helsetjenester enn det de bør, eller når de bruker for mindre pga pris. 
+
+
+
+
+
 ### 1.2.3
 
 Diskuter fordelingseffekter av økte egenandeler.
+
+
+
 
 \newpage
 
