@@ -53,6 +53,7 @@ library(gdata)
 library(httr)
 library(jsonlite)
 library(ggrepel)
+library(stringr)
 ```
 
 ## Utfordring 1.1
@@ -359,6 +360,134 @@ Vise befolkningspyramide.
 
 Folk må betale pensjon og velferdsordninger til kommende generasjon osv.
 
+```{r}
+url <- "https://data.ssb.no/api/v0/no/table/07459/"
+
+
+query <- '{
+  "query": [
+    {
+      "code": "Region",
+      "selection": {
+        "filter": "vs:Landet",
+        "values": [
+          "0"
+        ]
+      }
+    },
+    {
+      "code": "Kjonn",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "code": "Alder",
+      "selection": {
+        "filter": "agg:FemAarigGruppering",
+        "values": [
+          "F00-04",
+          "F05-09",
+          "F10-14",
+          "F15-19",
+          "F20-24",
+          "F25-29",
+          "F30-34",
+          "F35-39",
+          "F40-44",
+          "F45-49",
+          "F50-54",
+          "F55-59",
+          "F60-64",
+          "F65-69",
+          "F70-74",
+          "F75-79",
+          "F80-84",
+          "F85-89",
+          "F90-94",
+          "F95-99",
+          "F100G5+"
+        ]
+      }
+    },
+    {
+      "code": "Tid",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "2003",
+          "2004",
+          "2005",
+          "2006",
+          "2007",
+          "2008",
+          "2009",
+          "2010",
+          "2011",
+          "2012",
+          "2013",
+          "2014",
+          "2015",
+          "2016",
+          "2017",
+          "2018",
+          "2019",
+          "2020",
+          "2021",
+          "2022",
+          "2023"
+        ]
+      }
+    }
+  ],
+  "response": {
+    "format": "json-stat2"
+  }
+}'
+
+df_07459 <- url %>%
+  POST(body = query, encode = "json") %>% 
+  content("text") %>%
+  fromJSONstat() %>%
+  as_tibble() %>% 
+  filter(år %in% c("2003", "2023"))
+
+
+
+df_07459 %>%
+  mutate(start_alder = as.integer(str_extract(alder, "^\\d+"))) %>% #regex og sett de første funne tall til int
+  arrange(år) %>%  
+  mutate(value = ifelse(kjønn=="Menn", value*(-1), value*1)) %>%
+  ggplot(aes(x = reorder(alder, start_alder),y = value, fill=kjønn, alpha = as.factor(år))) +
+  scale_alpha_manual(values = c("2003" = 1, "2023" = 0.5))+
+  geom_col(position = "identity") +
+  labs(x="Populasjon", y="", fill="Kjønn", alpha="Year")+
+  coord_flip() 
+#rm(url, query)
+
+
+
+df_07459 %>%
+  mutate(start_alder = as.integer(str_extract(alder, "^\\d+"))) %>% 
+  arrange(år) %>%
+  mutate(value = ifelse(kjønn=="Menn", value*(-1), value*1)) %>%
+  ggplot(aes(x = reorder(alder, start_alder), y = value, fill = kjønn)) +
+  geom_col(data = . %>% filter(år == "2023"), position = "identity") +
+  geom_col(data = . %>% filter(år == "2003"), position = "identity", color = "black", alpha = 0.5) +
+  annotate("text", x = 0, y = 0, label = "Kvinner", hjust = 1, vjust = 1) +
+  annotate("text", x = -0, y = 0, label = "Menn", hjust = 0, vjust = 1) +
+  
+  labs(x = "Populasjon", y = "", fill = "") +
+  coord_flip()
+
+
+
+```
+
 ## Utfordring 1.2
 
 I en tid med økende helsetjenestekostnader og begrensede offentlige budsjetter vurderer mange europeiske land økte egenandeler som et verktøy for å påvirke etterspørselen etter helsetjenester og redusere atferdsrisiko. Sammenligning av nivåene av brukerbetaling (egenandel) for ulike helsetjenester mellom land kan gi innsikt i hvordan brukerbetaling påvirker forbruket av helse-tjenester. Bruk datasettet hlth_sha11_hf fra Eurostat for år 2019 i din besvarelse.
@@ -376,26 +505,30 @@ eurostat <- read_csv("https://ec.europa.eu/eurostat/api/dissemination/sdmx/3.0/d
 eurostat <- eurostat %>%
   select(-c(1:3)) %>%
   rename(unit = 1, scheme = 2, geo = 3, time = 4, value = 5, flag = 6) %>% 
-  filter(time == "2019", unit == "PC_CHE: Percentual share of total current health expenditure (CHE)", scheme == "HF3: Household out-of-pocket payment") %>% 
+  filter(time == "2019", unit == "PC_CHE: Percentual share of total current health expenditure (CHE)", scheme %in% c("HF3: Household out-of-pocket payment", "HF1: Government schemes and compulsory contributory health care financing schemes")) %>% 
   select(-time, -flag) %>% 
   filter(!geo %in% c("EA18: Euro area - 18 countries (2014)", "EA19: Euro area - 19 countries  (2015-2022)", "EU27_2020: European Union - 27 countries (from 2020)", "EU28: European Union - 28 countries (2013-2020)")) 
 
 
 
 
+
+
 eurostat <- eurostat %>% 
-  pivot_wider(names_from = "unit", values_from="value") %>% 
-  rename(govexp = 5, householdexp = 6) %>% 
+  pivot_wider(names_from = "scheme", values_from="value") %>% 
+  rename(govexp = 3, householdexp = 4) %>% 
   filter(!geo %in% c("EA18: Euro area - 18 countries (2014)", "EA19: Euro area - 19 countries  (2015-2022)", "EU27_2020: European Union - 27 countries (from 2020)", "EU28: European Union - 28 countries (2013-2020)"))
 
 
 plot <- eurostat %>% 
-  ggplot(aes(x=geo, y=value)) +
+  ggplot(aes(y=govexp, x=householdexp)) +
   geom_point()+
-  labs(x="PC_CHE: Percentual share of total current health expenditure (CHE)
-", y="wtf", caption = "Eurostat hlth_sha11_hf")+
-  #geom_smooth(method=lm, se=FALSE) +
-  theme_bw()
+  #labs(x="PC_CHE: Percentual share of total current health expenditure (CHE)
+#", y="wtf", caption = "Eurostat hlth_sha11_hf")+
+  geom_smooth(method=lm, se=FALSE) +
+  theme_bw()+
+  geom_text_repel(aes(label=geo))
+
 
 ggsave("eurostat.png", width=8, height=4)
 
@@ -413,9 +546,7 @@ plot
 ```
 Lag et punktdiagram som viser sammenhengen mellom andelen av egenbetalinger (Household out-of-pocket payment, på x-aksen) og helsetjenesteforbruk pr. innbygger (Purchasing power standard (PPS) per inhabitant, på y-aksen) i europeiske land. Forklar sammenhengen mellom variablene du ser i figuren og gjør også rede for om det er korrelasjon mellom variablene i dette datasettet.
 
-Det er noe svak korrelasjon som vist. skal putte inn output fra R\^2 og slikt.
-
-Det vi ser er at hvis pps øker, så øker også egenbetalingen. Dette kan være fordi folk har mer penger og dermed bruker mer på helsetjenester. Eller fordi den økte egenbetalingen reduserer bruk av helsetjenester, slik at problemer blir større over tid og folk må bruke mer penger på helsetjenester som øker kostnaden til staten.
+Det vi ser er at når egenandelen øker, så synker utgiftene til helsetjenester. Den økte egenbetalingen reduserer bruk av helsetjenester, slik at du kan få et underforbruk av helsetjenester slik at problemer blir større over tid.
 
 ### 1.2.2
 
