@@ -114,9 +114,7 @@ ggsave("df_04544.png", width=8, height=4)
 rm(query, url04544)
 ```
 
-
-
-Statistisk Sentral Byrå (SSB) har [data](https://data.ssb.no/api/v0/no/table/04544/) (tabell 04544) som viser gjennomsnittlig antall arbeidstimer blant menn og kvinner i Norge. Bruk disse dataene for å vise **empiriske kjønnsforskjeller i valg av arbeidstimer for menn og kvinner**. 
+Statistisk Sentral Byrå (SSB) har [data](https://data.ssb.no/api/v0/no/table/04544/) (tabell 04544) som viser gjennomsnittlig antall arbeidstimer blant menn og kvinner i Norge. Bruk disse dataene for å vise **empiriske kjønnsforskjeller i valg av arbeidstimer for menn og kvinner**.
 
 ```{=tex}
 \begin{figure}[h]
@@ -126,34 +124,23 @@ Statistisk Sentral Byrå (SSB) har [data](https://data.ssb.no/api/v0/no/table/04
     \label{fig:fig1}
 \end{figure}
 ```
-
-
 Forklar dine empiriske observasjoner **ved bruk av økonomisk teori**. Din forklaring skal inneholde grafisk illustrasjon av teorien. NB: i denne oppgaven skal du fokusere på forskjeller mellom menn og kvinner.
 
+Grafen viser en tydelig nedgang i menns ukentlige arbeidstimer fra 1996 til 2022, mens kvinners arbeidstimer viser en svak stigning over samme periode. Forskjellen mellon menns og kvinners arbeidstimer ser ut til å minske over tid.
 
-Grafen viser en tydelig nedgang i menns ukentlige arbeidstimer fra 1996 til 2022, mens kvinners arbeidstimer viser en svak stigning over samme periode. Forskjellen mellon menns og kvinners arbeidstimer ser ut til å minske over tid. 
-
-
-
-Kvinner må jobbe mindre når de har fått barn. de bruker lengere tid til å komme tilbake i arbeid uten god barnepassordninger osv. 
+Kvinner må jobbe mindre når de har fått barn. de bruker lengere tid til å komme tilbake i arbeid uten god barnepassordninger osv.
 
 Kvinner får færre barn, så mer tid til arbeid
 
 Teoretisk Forklaring:
 
-Overtidspremien:
-Menns nedgang i arbeidstimer kan være assosiert med en økning i overtid og dermed et ønske om å unngå å jobbe overtid, den økte lønnen fra overtid gir en inntekts og subsitisjonseffekt som leder til at fritid blir mer verdt og menn da velger færre arbeidstimer. Dette kan også forklare hvorfor menns timer har gått ned til rundt 36 timer, noe som er nærmere en typisk 35-timers arbeidsuke i mange europeiske land.
+Overtidspremien: Menns nedgang i arbeidstimer kan være assosiert med en økning i overtid og dermed et ønske om å unngå å jobbe overtid, den økte lønnen fra overtid gir en inntekts og subsitisjonseffekt som leder til at fritid blir mer verdt og menn da velger færre arbeidstimer. Dette kan også forklare hvorfor menns timer har gått ned til rundt 36 timer, noe som er nærmere en typisk 35-timers arbeidsuke i mange europeiske land.
 
-Deltid og Deltakelse:
-Den svake økningen i kvinners arbeidstimer kan være et resultat av en økning i tilgjengelighet og aksept av deltidsarbeid. Tilgjengeligheten av deltidsarbeid tillate personer med en høyere reservasjonslønn å oppnå en relativt gunstig kombinasjon av arbeid og fritid.
+Deltid og Deltakelse: Den svake økningen i kvinners arbeidstimer kan være et resultat av en økning i tilgjengelighet og aksept av deltidsarbeid. Tilgjengeligheten av deltidsarbeid tillate personer med en høyere reservasjonslønn å oppnå en relativt gunstig kombinasjon av arbeid og fritid.
 
-
-Arbeidstilbud og Arbeidsetterspørsel:
-Som nevnt i teksten, kan produksjonsfunksjonen til bedrifter være separabel mellom antall arbeidere og timer per arbeider. Dette kan føre til at bedrifter foretrekker å ha færre arbeidere som jobber flere timer (opptil et visst punkt) i stedet for flere arbeidere som jobber færre timer.
-
+Arbeidstilbud og Arbeidsetterspørsel: Som nevnt i teksten, kan produksjonsfunksjonen til bedrifter være separabel mellom antall arbeidere og timer per arbeider. Dette kan føre til at bedrifter foretrekker å ha færre arbeidere som jobber flere timer (opptil et visst punkt) i stedet for flere arbeidere som jobber færre timer.
 
 Endringene i menns og kvinners arbeidstimer over tid kan forklares ved en kombinasjon av individuelle valg (drevet av preferanser for fritid og inntekt), arbeidsgivers valg (drevet av produksjonskostnader og etterspørsel etter arbeidskraft), og institusjonelle faktorer (som tilgjengeligheten av deltidsarbeid og overtidsreguleringer).
-
 
 ```{python}
 from IPython.display import display, Math, Latex
@@ -283,13 +270,9 @@ ax.legend()
 plt.show()
 ```
 
-$$U(c,l)=c^{a}l^{b}$$
-Hvor $0<\alpha, \beta <1$ og $\alpha+\beta\leq1$ 
+$$U(c,l)=c^{a}l^{b}$$ Hvor $0<\alpha, \beta <1$ og $\alpha+\beta\leq1$
 
 ved bruk av denne ligningen så kan vi se kvinners valg av arbeidstimer og fritid. Ved å legge inn hvilken inntekt de ønsker dersom de er tvunget til fulltid eller deltid vil vi kunne se hvor mye de ønsker å jobbe. Vi vet at kvinner i større grad en menn jobber deltid.
-
-
-
 
 ### 1.1.2
 
@@ -300,75 +283,19 @@ df112 <- read_delim("https://raw.githubusercontent.com/uit-sok-2008-h23/uit-sok-
 
 [Dette datasettet](https://github.com/uit-sok-2008-h23/uit-sok-2008-h23.github.io/blob/main/assets/women.csv) inneholder informasjon om generøsiteten av foreldrepermisjonsordninger og mødres yrkesdeltakelse i 24 OECD land i 2021. For å gjøre ulike lands rettigheter sammenlignbare presenteres permisjonsordningenes gunstighet ved hjelp av «full rate equivalent» (uker med 100% støtte), hvilket tilsvarer foreldrepermisjonens varighet i uker multiplisert med utbetalingssats i prosent av gjennomsnittlig inntekt. Variabelen «tot_full_rate» beskriver sysselsettingsraten i befolkningen (menn og kvinner). **Bruk datasettet til å lage to diagrammer som viser sammenhengen mellom lengde på betalt foreldrepermisjon og yrkesdeltakelse blant kvinner**. I det ene diagrammet skal du bruke data som beskriver sysselsetting blant kvinner med barn i alderen 0-2 år (fem_emp_rate_0_2), og det andre skal du bruke data på kvinner med barn i alderen 6-14 år (fem_emp_rate_6_14). Diskuter, basert på disse diagrammene og økonomisk teori, følgende påstand: «Gunstige permisjonsordninger ved fødsel sikrer høy yrkesdeltakelse blant kvinner på lang sikt».
 
-
 Legger inn matte og figur som viser endring på hvordan reservasjonslønnen synker med tiden og dersom de har krav på jobb tidlig så vil de gå raskere tilbake i arbeid.
 
+Empiriske funn: Subsidiert barnepass Havnes og Mogstad (2011) Norge • Effekt på kvinners yrkesdeltakelse og barns humankapital • Kvinners yrkesdeltakelse økte • Barnenes utdanningsnivå økte Bauernschuster & Schlotter (2015) & Brillil et al (2016) • Tilgang til offentlig barnehage økte kvinners yrkesdeltakelse
 
+Empiriske funn: Foreldrepermisjon Rum (1998): • Rett til korte perioder med foreldrepermisjon: • + 3 -- 4% sysselsetting blant kvinner. • Ingen effekt på lønn for kvinner • Rett til lengre perioder med foreldrepermisjon: • + 3 -- 4% sysselsetting blant kvinner. • -- 3% i lønn for kvinner.
 
-Empiriske funn:
-Subsidiert barnepass
-Havnes og Mogstad (2011) Norge
-• Effekt på kvinners yrkesdeltakelse og barns
-humankapital
-• Kvinners yrkesdeltakelse økte
-• Barnenes utdanningsnivå økte
-Bauernschuster & Schlotter (2015) & Brillil et
-al (2016)
-• Tilgang til offentlig barnehage økte kvinners
-yrkesdeltakelse
+Empiriske funn: Foreldrepermisjon Baker & Milligan (2008) • Når foreldre-permisjonen øker fra å være kort (17-18 uker) til å være lang (19-70 uker) øker sannsynligheten at kvinner går tilbake til samme arbeidsgivere.
 
-Empiriske funn: Foreldrepermisjon
-Rum (1998):
-• Rett til korte perioder med foreldrepermisjon:
-• + 3 – 4% sysselsetting blant kvinner.
-• Ingen effekt på lønn for kvinner
-• Rett til lengre perioder med foreldrepermisjon:
-• + 3 – 4% sysselsetting blant kvinner.
-• – 3% i lønn for kvinner.
+Empiriske funn: Foreldrepermisjon Hvor lang skal permisjonen være? • Dustman & Schönberg (2012) og Dahl et al (2016): • Lengre permisjon har... • ingen effekt på yrkesdeltakelse • ingen effekt på barnenes utdanningsnivå
 
-Empiriske funn: Foreldrepermisjon
-Baker & Milligan (2008)
-• Når foreldre-permisjonen øker fra å være
-kort (17-18 uker) til å være lang (19-70
-uker) øker sannsynligheten at kvinner går
-tilbake til samme arbeidsgivere.
+Empiriske funn: Pappa-perm Ekberg et al (2013) og Avdic & Karim (2018) • Menn tok ut mer permisjon (15 dager) • Kvinner tok ut mindre (25 dager) • Kvinner var fortsatt hjemme med syke barn • (Økt sannsynlighet for skilsmesse) Dunatchik & Özcan (2020) og Patnaik (2019) • Menn tok ut flere dager (50%) • Kvinner endret ikke sitt uttak • Menn deltok mere i husholdsarbeid og oppdragelse av barna.
 
-
-
-Empiriske funn: Foreldrepermisjon
-Hvor lang skal permisjonen være?
-• Dustman & Schönberg (2012) og Dahl et al
-(2016):
-• Lengre permisjon har…
-• ingen effekt på yrkesdeltakelse
-• ingen effekt på barnenes
-utdanningsnivå
-
-
-Empiriske funn: Pappa-perm
-Ekberg et al (2013) og Avdic & Karim (2018)
-• Menn tok ut mer permisjon (15 dager)
-• Kvinner tok ut mindre (25 dager)
-• Kvinner var fortsatt hjemme med syke
-barn
-• (Økt sannsynlighet for skilsmesse)
-Dunatchik & Özcan (2020) og Patnaik (2019)
-• Menn tok ut flere dager (50%)
-• Kvinner endret ikke sitt uttak
-• Menn deltok mere i husholdsarbeid og
-oppdragelse av barna.
-
-
-
-Konklusjoner fra empiriske studier?
-• Subsidiert barnepass ser ut å øke kvinners yrkesdeltakelse
-• Bidrag til å hand om barn hjemme ser ut å ha en negativ effekt på kvinners
-arbeidstilbud
-• Foreldrepermisjon som gir foreldre lovbestemt rett å beholde jobben…
-• Ser ut å ha en positiv effekt på kvinners arbeidskraftdeltagelse og sysselsettingsnivå
-• Kan ha negativ påvirkning på kvinners lønn
-• Pappa-perm øker fedres uttak av foreldreledighet. Andre effekter er uklare
-
+Konklusjoner fra empiriske studier? • Subsidiert barnepass ser ut å øke kvinners yrkesdeltakelse • Bidrag til å hand om barn hjemme ser ut å ha en negativ effekt på kvinners arbeidstilbud • Foreldrepermisjon som gir foreldre lovbestemt rett å beholde jobben... • Ser ut å ha en positiv effekt på kvinners arbeidskraftdeltagelse og sysselsettingsnivå • Kan ha negativ påvirkning på kvinners lønn • Pappa-perm øker fedres uttak av foreldreledighet. Andre effekter er uklare
 
 ```{r}
 
@@ -386,9 +313,6 @@ plot <- df112 %>%
 ggsave("pointfig0_2.png", width=8, height=4)
 
 ```
-
-
-
 
 ```{r}
 
@@ -414,9 +338,6 @@ ggsave("pointfig6_14.png", width=8, height=4)
     \label{fig:fig2}
 \end{figure}
 ```
-
-
-
 ```{=tex}
 \begin{figure}[h]
     \centering
@@ -424,21 +345,11 @@ ggsave("pointfig6_14.png", width=8, height=4)
     \label{fig:fig3}
 \end{figure}
 ```
-
-
-
-
-Når man har lang foreldre permisjon så kommer kvinner raskere i arbeid, dette  viser jeg i ligning og økonomisk teori som vises i boken. 
+Når man har lang foreldre permisjon så kommer kvinner raskere i arbeid, dette viser jeg i ligning og økonomisk teori som vises i boken.
 
 Når man har rett på samme jobb igjen så går du raskere i arbeid igjen siden din reservasjonslønn ikke synker raskt, og din jobb vil da hyre deg inn på den litt lavere lønnen da tidligere
 
-
 her ender inntektseffekten til å dominere som foresaker de til å bli lengere i arbeid men like mange kommer tilbake i arbeid
-
-
-
-
-
 
 ### 1.1.3
 
@@ -448,8 +359,6 @@ Vise befolkningspyramide.
 
 Folk må betale pensjon og velferdsordninger til kommende generasjon osv.
 
-
-
 ## Utfordring 1.2
 
 I en tid med økende helsetjenestekostnader og begrensede offentlige budsjetter vurderer mange europeiske land økte egenandeler som et verktøy for å påvirke etterspørselen etter helsetjenester og redusere atferdsrisiko. Sammenligning av nivåene av brukerbetaling (egenandel) for ulike helsetjenester mellom land kan gi innsikt i hvordan brukerbetaling påvirker forbruket av helse-tjenester. Bruk datasettet hlth_sha11_hf fra Eurostat for år 2019 i din besvarelse.
@@ -458,64 +367,143 @@ I en tid med økende helsetjenestekostnader og begrensede offentlige budsjetter 
 
 ```{r}
 
-eurostat <- read_csv("https://ec.europa.eu/eurostat/api/dissemination/sdmx/3.0/data/dataflow/ESTAT/HLTH_SHA11_HF/1.0?compress=false&format=csvdata&formatVersion=2.0&lang=en&labels=both", show_col_types = FALSE)
+eurostat <- read_csv("https://ec.europa.eu/eurostat/api/dissemination/sdmx/3.0/data/dataflow/ESTAT/HLTH_SHA11_HF/1.0?compress=false&format=csvdata&formatVersion=2.0&lang=en&labels=both", show_col_types = FALSE) 
+
+
+
+
 
 eurostat <- eurostat %>%
   select(-c(1:3)) %>%
   rename(unit = 1, scheme = 2, geo = 3, time = 4, value = 5, flag = 6) %>% 
-  filter(time == "2019", unit == "PPS_HAB: Purchasing power standard (PPS) per inhabitant", scheme %in% c("HF1: Government schemes and compulsory contributory health care financing schemes" , "HF3: Household out-of-pocket payment"))
-  
-
-test <- eurostat %>% 
-  pivot_wider(names_from = "scheme", values_from="value") %>% 
-  rename(govexp = 5, householdexp = 6)
-  
+  filter(time == "2019", unit == "PC_CHE: Percentual share of total current health expenditure (CHE)", scheme == "HF3: Household out-of-pocket payment") %>% 
+  select(-time, -flag) %>% 
+  filter(!geo %in% c("EA18: Euro area - 18 countries (2014)", "EA19: Euro area - 19 countries  (2015-2022)", "EU27_2020: European Union - 27 countries (from 2020)", "EU28: European Union - 28 countries (2013-2020)")) 
 
 
-plot <- test %>% 
-  filter(!geo %in% c("EA18: Euro area - 18 countries (2014)", "EA19: Euro area - 19 countries  (2015-2022)", "EU27_2020: European Union - 27 countries (from 2020)", "EU28: European Union - 28 countries (2013-2020)")) %>% 
-  ggplot(aes(x=householdexp, y=govexp)) +
+
+
+eurostat <- eurostat %>% 
+  pivot_wider(names_from = "unit", values_from="value") %>% 
+  rename(govexp = 5, householdexp = 6) %>% 
+  filter(!geo %in% c("EA18: Euro area - 18 countries (2014)", "EA19: Euro area - 19 countries  (2015-2022)", "EU27_2020: European Union - 27 countries (from 2020)", "EU28: European Union - 28 countries (2013-2020)"))
+
+
+plot <- eurostat %>% 
+  ggplot(aes(x=geo, y=value)) +
   geom_point()+
-  labs(x="Household out-of-pocket payment", y="Government schemes and compulsory contributory health care financing schemes", caption = "Eurostat hlth_sha11_hf")+
-  geom_smooth(method=lm, se=FALSE) +
+  labs(x="PC_CHE: Percentual share of total current health expenditure (CHE)
+", y="wtf", caption = "Eurostat hlth_sha11_hf")+
+  #geom_smooth(method=lm, se=FALSE) +
   theme_bw()
 
-ggsave("test.png", width=8, height=4)
+ggsave("eurostat.png", width=8, height=4)
+
+plot
 
 ```
 
 ```{=tex}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{test.png}
+    \includegraphics[width=\textwidth]{eurostat.png}
     \caption{eurostat}
     \label{fig:fig4}
 \end{figure}
 ```
 Lag et punktdiagram som viser sammenhengen mellom andelen av egenbetalinger (Household out-of-pocket payment, på x-aksen) og helsetjenesteforbruk pr. innbygger (Purchasing power standard (PPS) per inhabitant, på y-aksen) i europeiske land. Forklar sammenhengen mellom variablene du ser i figuren og gjør også rede for om det er korrelasjon mellom variablene i dette datasettet.
 
+Det er noe svak korrelasjon som vist. skal putte inn output fra R\^2 og slikt.
 
-Det er noe svak korrelasjon som vist. skal putte inn output fra R^2 og slikt. 
-
-Det vi ser er at hvis pps øker, så øker også egenbetalingen. Dette kan være fordi folk har mer penger og dermed bruker mer på helsetjenester. Eller fordi den økte egenbetalingen reduserer bruk av helsetjenester, slik at problemer blir større over tid og folk må bruke mer penger på helsetjenester som øker kostnaden til staten. 
-
+Det vi ser er at hvis pps øker, så øker også egenbetalingen. Dette kan være fordi folk har mer penger og dermed bruker mer på helsetjenester. Eller fordi den økte egenbetalingen reduserer bruk av helsetjenester, slik at problemer blir større over tid og folk må bruke mer penger på helsetjenester som øker kostnaden til staten.
 
 ### 1.2.2
 
 Forklar hvordan økt egenbetaling påvirker helsetjenesteforbruk og øker effektiviteten **ved å bruke økonomisk teori om atferdsrisiko** du har lært på kursets forelesninger og videoforelesninger. Bruk diagram(mer) i din besvarelse.
 
-Seminar fra mikko. Tegn figuren som vist med dødvektstap når folk bruker flere helsetjenester enn det de bør, eller når de bruker for mindre pga pris. 
+Seminar fra mikko. Tegn figuren som vist med dødvektstap når folk bruker flere helsetjenester enn det de bør, eller når de bruker for mindre pga pris.
+
+```{python}
+from IPython.display import display, Math, Latex
+import numpy as np
+from matplotlib import pyplot as plt
+import sympy as sp
 
 
+def demand(p):
+    return 200-p
 
 
+#supply linear line at 100
+def supply(p, t):
+    return 100 + t*p
+
+def supply5(p, t):
+    return 50 + t*p
+
+p, t = sp.symbols('p t', real = True, positive = True)
+
+eq_1 = sp.Eq(demand(p), supply(p, t))
+
+
+#plot them
+p = np.linspace(0, 200, 1000)
+
+
+fig, ax = plt.subplots()
+
+ax.set_ylabel('Pris på helsetjenester $p$', loc='top')
+ax.set_xlabel('Forbruk av helsetjenster $q$', loc='right')
+ax.set(xlim=(0,250))
+ax.set(ylim=(0,250))
+ax.spines['top'].set_color('none')
+ax.spines['right'].set_color('none')
+#noticks
+#ax.xaxis.set_ticks_position('none')
+#ax.yaxis.set_ticks_position('none')
+#no ticklabels
+ax.xaxis.set_major_formatter(plt.NullFormatter())
+ax.yaxis.set_major_formatter(plt.NullFormatter())
+
+
+#vline to intersection 1 and 2
+ax.vlines(100,0,100, color='grey',ls='dashed')
+ax.text(100, 5, '$q_1$', fontsize=12)
+ax.vlines(150,0,100, color='grey',ls='dashed')
+ax.text(150, 5, '$q_2$', fontsize=12)
+ax.text(200, 5, '$q_3$', fontsize=12)
+
+
+ax.plot(p, demand(p), label='Etterspørsel')
+ax.text(-26, 47, '$P=0.5$', fontsize=10)
+ax.plot(p, supply(p, 0), label='1 egenandel')
+ax.text(-20, 97, '$P=1$', fontsize=10)
+ax.text(-20, 0, '$P=0$', fontsize=10)
+
+ax.plot(p, supply5(p, 0), label='0.5 egenandel')
+
+#fillbetween above egenandel 0.5 and 1 egenandel from 100 to 150 but only above the ettersporsel line
+ax.fill_between(p, demand(p), supply(p, 0), where= (p>100) & (p<150), color='grey', alpha=0.7, label = "Dødvektstap")
+#fillbetween y0 to y100, and x0 to x100
+ax.fill_between(p, 0, 100, where= (p>0) & (p<100), color='lightblue', alpha=0.9, label = "Opprinnelig forbruk")
+#fillbetween y0 to the etterspørsels line
+ax.fill_between(p, 0, demand(p), where= (p>100) & (p<150), color='red', alpha=0.1)
+
+
+ax.text(2, 55, 'Opprinnelig bruk av helsetjenester \n før innføring av helseforsikring', fontsize=12)
+
+
+ax.legend()
+
+
+plt.show()
+
+
+```
 
 ### 1.2.3
 
 Diskuter fordelingseffekter av økte egenandeler.
-
-
-
 
 \newpage
 
