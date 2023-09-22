@@ -55,6 +55,8 @@ library(httr)
 library(jsonlite)
 library(ggrepel)
 library(stringr)
+library(kableExtra)
+library(modelsummary)
 ```
 
 ```{r}
@@ -126,9 +128,10 @@ plot <- df112 %>%
   geom_text_repel(aes(label=country))+
   theme_bw()+
   theme(legend.position = "none")+
-  labs(x="Antall uker permisjon", y="Kvinner i arbeid 0-2", caption="Data fra OECD, tilgang gitt fra Andrea Mannberg")+
+  labs(x="Antall uker permisjon", y="Kvinner i arbeid med barn i alderen 0-2", caption="Data fra OECD, tilgang gitt fra Andrea Mannberg")+
   scale_x_continuous()+
-  scale_y_continuous(limits=c(0, 100), labels=scales::percent_format(scale=1), expand= c(0,0))
+  scale_y_continuous(limits=c(0, 100), labels=scales::percent_format(scale=1), expand= c(0,0)) +
+  geom_smooth(method=lm, se=FALSE, alpha=0.5)
 
 
 ggsave("pointfig0_2.png", width=8, height=4)
@@ -143,10 +146,11 @@ plot <- df112 %>%
   geom_text_repel(aes(label=country))+
   theme_bw()+
   theme(legend.position = "none")+
-  labs(x="Antall uker permisjon", y="Kvinner i arbeid 6-14", caption="Data fra OECD, tilgang gitt fra Andrea Mannberg")+
+  labs(x="Antall uker permisjon", y="Kvinner i arbeid med barn i alderen 6-14", caption="Data fra OECD, tilgang gitt fra Andrea Mannberg")+
   scale_x_continuous()+
-  scale_y_continuous(limits = c(0, 100), labels=scales::percent_format(scale=1), expand= c(0,0))
-
+  scale_y_continuous(limits = c(0, 100), labels=scales::percent_format(scale=1), expand= c(0,0)) +
+  geom_smooth(method=lm, se=FALSE, alpha=0.5) 
+  
 
 ggsave("pointfig6_14.png", width=8, height=4)
 rm(plot, df112)
@@ -261,7 +265,7 @@ plot <- df_07459 %>%
   geom_text(aes(label = "Menn", y = -200000, x = "95-99 år"), hjust = 0, vjust = 0, size = 4, color="#0E3F59") +
   geom_text(aes(label = "Kvinne", y = 150000, x = "95-99 år"), hjust = 0, vjust = 0, size = 4, color="#BC2222") +
   scale_fill_manual(values = c(Menn = "#0E3F59", Kvinner = "#BC2222")) +
-  labs(x="", y="", fill="", alpha="", title="Norges populasjon", caption="SSB tabell 07459", subtitle="2003, helfargede søyler. 2023, gjennomsiktige")+
+  labs(x="", y="", fill="", alpha="", title="2003, helfargede søyler. 2023, gjennomsiktige", caption="SSB tabell 07459")+
   scale_y_continuous(labels = abs(seq(-300000,300000,by = 75000)),
                      breaks = seq(-300000,300000,by = 75000))+
   coord_flip()+
@@ -295,11 +299,13 @@ plot <- eurostat %>%
   mutate(geo = substr(geo, 1, 2)) %>% 
   ggplot(aes(x=householdexp_percent, y=govexp)) +
   geom_point()+
-  labs(x="Egenandel andel av totale helsekostnader", y="Kjøpekrafts justerte totale kostnader per innbygger", caption = "Eurostat hlth_sha11_hf", title="Egenandeler som andel av totale utgifter helsetjenester")+
+  labs(x="Egenandel andel av totale helsekostnader", y="Kjøpekrafts justerte totale kostnader per innbygger", caption = "Eurostat hlth_sha11_hf")+
   geom_smooth(method=lm, se=FALSE) +
   theme_bw()+
   geom_text_repel(aes(label=geo))+
   scale_x_continuous(labels=scales::percent_format(scale=1))
+
+table <- lm(eurostat$govexp ~ eurostat$householdexp_percent)
 
 
 ggsave("eurostat.png", width=8, height=4)
@@ -402,8 +408,7 @@ ax.plot(x_res, budsjett(2000, 20, 20, x_res), label='Budsjett', color="black")
 #hline to the right of the budget line
 ax.hlines(20,20,80, color='grey',ls='dashed')
 #text m "Reservasjonslønn"
-ax.text(20, 22, '$m$ er arbeidsfri inntekt', fontsize=12)
-
+ax.text(12, 19, '$c$=$m$', fontsize=12)
 #text for both other h lines
 ax.text(12, 50, '$c_{kvinner}$', fontsize=12)
 ax.text(12, 60, '$c_{menn}$', fontsize=12)
@@ -426,6 +431,55 @@ plt.savefig('preferanser.png')
 
 ```{python include=FALSE}
 
+from IPython.display import display, Math, Latex
+import numpy as np
+from matplotlib import pyplot as plt
+import sympy as sp
+
+
+
+c, l, a, b, U_0 =sp.symbols("c l a b U_0", real=True, positive=True)
+U=c**a*l**b
+# Løser for x_2
+x_2_ind_sol=sp.solve(U-U_0,l)[0]
+
+indiff_x_2=sp.lambdify( (U_0,a,b,c), x_2_ind_sol)
+
+
+
+def budsjett(M, p1, p2, x1):
+    return M/p2 - p1*x1/p2
+
+
+p_1, p_2, m =sp.symbols("p_1 p_2 m", real=True, positive=True)
+
+# budsjett
+bud=p_1*c+p_2*l
+
+# Beregne MSB
+
+msb = sp.diff(U, c)/sp.diff(U,l)
+x_2_rel=sp.solve(msb-p_1/p_2,l)[0]
+budsj=bud.subs(l,x_2_rel)
+x_1_eq= sp.solve(budsj-m,c)[0]
+
+x_2_eq= x_2_rel.subs(c,x_1_eq)
+
+U_max=U.subs([(c,x_1_eq),(l,x_2_eq)])
+
+nytte_kvinne = U_max.subs([(a,.4),(b,.4),(m,2000),(p_1,20),(p_2,20)])
+x_1_num_kvinne = x_1_eq.subs([(a,.4),(b,.4),(m,2000),(p_1,20),(p_2,20)])
+x_2_num_kvinne = x_2_eq.subs([(a,.4),(b,.4),(m,2000),(p_1,20),(p_2,20)])
+
+
+nytte_menn = U_max.subs([(a,.3),(b,.5),(m,2000),(p_1,20),(p_2,20)])
+x_1_num_menn = x_1_eq.subs([(a,.3),(b,.5),(m,2000),(p_1,20),(p_2,20)])
+x_2_num_menn = x_2_eq.subs([(a,.3),(b,.5),(m,2000),(p_1,20),(p_2,20)])
+
+
+
+x=np.linspace(0.001,100, 100)
+
 fig, ax = plt.subplots()
 
 
@@ -446,7 +500,6 @@ ax.yaxis.set_ticks_position('none')
 
 
 x = np.linspace(15, 35, 100)
-ax.plot(x, indiff_x_2(nytte_kvinne,.4,.4,x), color="black")
 
 
 
@@ -454,12 +507,40 @@ ax.set_xlim(0, 40)
 ax.set_ylim(0, 210)
 #savefig
 
+
+#hline from the left of the graph to the right
+ax.hlines(indiff_x_2(nytte_kvinne,.4,.4,x)[0],0,15, color='grey',ls='dashed')
+ax.hlines(indiff_x_2(nytte_kvinne,.4,.4,x)[10],0,15, color='grey',ls='dashed')
+
+ax.hlines(indiff_x_2(nytte_kvinne,.4,.4,x)[99],0,15, color='grey',ls='dashed')
+
+
+#vlines 
+ax.vlines(15,0,indiff_x_2(nytte_kvinne,.4,.4,x)[0], color='grey',ls='dashed')
+
+
+#text
+ax.text(15, -10, '$t_0$', fontsize=12)
+
+ax.text(-2, indiff_x_2(nytte_kvinne,.4,.4,x)[0], '$w_1^r$', fontsize=12)
+ax.text(-2, indiff_x_2(nytte_kvinne,.4,.4,x)[10], '$w_0$', fontsize=12)
+
+ax.text(-2, indiff_x_2(nytte_kvinne,.4,.4,x)[99], '$w_0^r$', fontsize=12)
+
+
+
+
+#plt savefig
+plt.savefig('0barn.png')
+ax.plot(x, indiff_x_2(nytte_kvinne,.4,.4,x), color="black")
+
+
 #hline from the left of the graph to the right
 ax.hlines(indiff_x_2(nytte_kvinne,.4,.4,x)[0],0,15, color='grey',ls='dashed')
 ax.hlines(indiff_x_2(nytte_kvinne,.4,.4,x)[10],0,17, color='grey',ls='dashed')
 ax.hlines(indiff_x_2(nytte_kvinne,.4,.4,x)[20],0,19, color='grey',ls='dashed')
 
-ax.hlines(indiff_x_2(nytte_kvinne,.4,.4,x)[99],0,15, color='grey',ls='dashed')
+ax.hlines(indiff_x_2(nytte_kvinne,.4,.4,x)[99],0,35, color='grey',ls='dashed')
 
 
 #vlines 
@@ -472,12 +553,14 @@ ax.text(15, -10, '$t_0$', fontsize=12)
 ax.text(17, -10, '$t_A$', fontsize=12)
 ax.text(19, -10, '$t_B$', fontsize=12)
 
-ax.text(-2, indiff_x_2(nytte_kvinne,.4,.4,x)[0], '$w_1^r$', fontsize=12)
-ax.text(-2, indiff_x_2(nytte_kvinne,.4,.4,x)[10], '$w_2$', fontsize=12)
+
 ax.text(-2, indiff_x_2(nytte_kvinne,.4,.4,x)[20], '$\^w$', fontsize=12)
 
-ax.text(-2, indiff_x_2(nytte_kvinne,.4,.4,x)[99], '$w_0^r$', fontsize=12)
-
+#scatter at w_0 and w^
+ax.scatter(17, indiff_x_2(nytte_kvinne,.4,.4,x)[10], color="black")
+ax.text(17, indiff_x_2(nytte_kvinne,.4,.4,x)[10]+2, 'A $w_0 = w_1$', fontsize=12)
+ax.scatter(19, indiff_x_2(nytte_kvinne,.4,.4,x)[20], color="black")
+ax.text(19, indiff_x_2(nytte_kvinne,.4,.4,x)[20]+2, 'B $w_1 = \^w$', fontsize=12)
 ax.text(35, indiff_x_2(nytte_kvinne,.4,.4,x)[99], '$w^r$', fontsize=12)
 
 
@@ -562,7 +645,6 @@ ax.legend()
 
 plt.savefig('deltid.png')
 
-
 ```
 
 ```{python include=FALSE}
@@ -641,8 +723,6 @@ plt.savefig('helsetjenester.png')
 
 ### 1.1.1
 
-Statistisk Sentral Byrå (SSB) har [data](https://data.ssb.no/api/v0/no/table/04544/) (tabell 04544) som viser gjennomsnittlig antall arbeidstimer blant menn og kvinner i Norge. Bruk disse dataene for å vise **empiriske kjønnsforskjeller i valg av arbeidstimer for menn og kvinner**.
-
 ```{=tex}
 \begin{figure}[h!]
     \centering
@@ -651,35 +731,43 @@ Statistisk Sentral Byrå (SSB) har [data](https://data.ssb.no/api/v0/no/table/04
     \label{fig:fig1}
 \end{figure}
 ```
-Forklar dine empiriske observasjoner **ved bruk av økonomisk teori**. Din forklaring skal inneholde grafisk illustrasjon av teorien. NB: i denne oppgaven skal du fokusere på forskjeller mellom menn og kvinner.
+Grafen i \autoref{fig:fig1} viser en tydelig nedgang i menns ukentlige arbeidstimer fra 1996 til 2022, mens kvinners arbeidstimer viser en svak stigning over samme periode. Forskjellen mellon menns og kvinners arbeidstimer ser ut til å minske over tid.
 
-Grafen viser en tydelig nedgang i menns ukentlige arbeidstimer fra 1996 til 2022, mens kvinners arbeidstimer viser en svak stigning over samme periode. Forskjellen mellon menns og kvinners arbeidstimer ser ut til å minske over tid.
+Forklaringen til hvorfor menn har hatt en nedgang i arbeidstimer kan være fordi det ble innført fedrekvote i foreldrepermisjonen. Siden starten av figuren så kan vi se at arbeidstiden til menn har gått ned, samtidig har fedrekvoten har blitt utvidet over tid.[^1] Vi kan se at det var en økning i arbeidstimer i 2014 og jeg gjør en antagelse at det er relatert til at fedrekvoten ble redusert i 2014 før den ble forlenget igjen i 2018. Dette kan da samtidig vise noe grunnlag til økningen i arbeidstimer til kvinner.
 
-Kvinner må jobbe mindre når de har fått barn. de bruker lengere tid til å komme tilbake i arbeid uten god barnepassordninger osv.
+[^1]: @hamre_2017_fedrekvoten
 
-Kvinner får færre barn, så mer tid til arbeid
+Fertilitetsraten har også gått ned som delvis kan være grunnen til økningen i arbeidstimer for kvinner.
 
-Teoretisk Forklaring:
+For å gi en forklaring på hvorfor kvinner jobber flere arbeidstimer enn menn så må jeg gjøre noen antagelser. Jeg går ut ifra at kvinner og menn har ulike preferanser for fritid og inntekt. Antagelsen jeg gjør er at menn har en høyere preferanse for inntekt enn kvinner, mens kvinner har en høyere preferanse for fritid enn menn. Det kan også være relatert til at det har vært en nedgang i antall timer overtid. [^2]
 
-Overtidspremien: Menns nedgang i arbeidstimer kan være assosiert med en økning i overtid og dermed et ønske om å unngå å jobbe overtid, den økte lønnen fra overtid gir en inntekts og subsitisjonseffekt som leder til at fritid blir mer verdt og menn da velger færre arbeidstimer. Dette kan også forklare hvorfor menns timer har gått ned til rundt 36 timer, noe som er nærmere en typisk 35-timers arbeidsuke i mange europeiske land.
+[^2]: @lien_2019_frre
 
-Deltid og Deltakelse: Den svake økningen i kvinners arbeidstimer kan være et resultat av en økning i tilgjengelighet og aksept av deltidsarbeid. Tilgjengeligheten av deltidsarbeid tillate personer med en høyere reservasjonslønn å oppnå en relativt gunstig kombinasjon av arbeid og fritid.
+Fra en artikkel om lønnsgapet i Norge på SSB "Det er langt flere kvinner som jobber deltid enn menn. Blant kvinner er det 46 prosent som jobber deltid, mens det blant menn er 25 prosent."@fltre_2022_slik
 
-Arbeidstilbud og Arbeidsetterspørsel: Som nevnt i teksten, kan produksjonsfunksjonen til bedrifter være separabel mellom antall arbeidere og timer per arbeider. Dette kan føre til at bedrifter foretrekker å ha færre arbeidere som jobber flere timer (opptil et visst punkt) i stedet for flere arbeidere som jobber færre timer.
+En del av grunnen kan være at kvinner må jobbe mindre når de nylig har fått barn. Effekten barnepass ordninger og permisjon har kommer jeg til i 1.1.2
 
-Endringene i menns og kvinners arbeidstimer over tid kan forklares ved en kombinasjon av individuelle valg (drevet av preferanser for fritid og inntekt), arbeidsgivers valg (drevet av produksjonskostnader og etterspørsel etter arbeidskraft), og institusjonelle faktorer (som tilgjengeligheten av deltidsarbeid og overtidsreguleringer).
+For å vise preferansene så bruker jeg ligningen $$U(c,l)=c^{a}l^{b}$$
+
+Hvor $0<\alpha, \beta <1$ og $\alpha+\beta\leq 1$ $c$ er konsum og $l$ er fritid og $\alpha$ og $\beta$ er elastisiteten mellom arbeid og fritid. Dette illustreres i \autoref{fig:fig2}
+
+Ved bruk av denne ligningen så kan vi legge inn forskjellige elasisiteter for konsum og fritid som viser personenes preferanser.
+
+Ved å legge inn hvilken inntekt de ønsker dersom de er tvunget til fulltid eller deltid vil vi kunne se hvor mye de ønsker å jobbe. Vi vet at kvinner i større grad en menn jobber deltid. Ved antagelsen om forskjell i preferanser til fritid og konsum så illustrerer jeg da dette ved å sette $\alpha$ for menn til 0.4 og $\beta$ til 0.4, og for kvinner setter jeg $\alpha$ til 0.3 og $\beta$ til 0.5. Dette vil da vise at kvinner har en høyere preferanse for fritid enn menn, og lavere preferanse for konsum.
 
 ```{=tex}
 \begin{wrapfigure}{r}{0.6\textwidth}
     \centering
     \includegraphics[width=0.6\textwidth]{preferanser.png}
-    \caption{Ulike perferanser}
+    \caption{Ulike preferanser}
     \label{fig:fig2}
 \end{wrapfigure}
 ```
-$$U(c,l)=c^{a}l^{b}$$ Hvor $0<\alpha, \beta <1$ og $\alpha+\beta\leq1$
+I \autoref{fig:fig2} så har vi konsum på y aksen hvor vi kan se tangerinspunktene til indifferansekurvene til menn og kvinner til budsjettlinjen til konsum. Disse er merket med $c_{menn}$ og $c_{kvinner}$. Langs x aksen så har vi fritid hvor vi igjen ser tangeringspunktene til menn og kvinner merket med $l_{menn}$ og $l_{kvinner}$.
 
-ved bruk av denne ligningen så kan vi se kvinners valg av arbeidstimer og fritid. Ved å legge inn hvilken inntekt de ønsker dersom de er tvunget til fulltid eller deltid vil vi kunne se hvor mye de ønsker å jobbe. Vi vet at kvinner i større grad en menn jobber deltid.
+$m$ er arbeidsfri inntekt og dette er inntekten de har uansett om de jobber eller ikke. Langs y aksen ser man $c=m$ og dette er nivået på konsum de har uansett om de jobber eller ikke. Budsjettlinjen viser inntekten som kommer fra arbeid som betales per time og det er bare et bestemt antall timer i døgnet og dette resulterer i at budsjettlinjen stopper hvor fritid = T (antall timer i døgnet).
+
+I figuren ser man blå og rød linje. Disse representerer indifferansekurvene til menn og kvinner. I figuren så er nyttenivået vist ved distanse fra origo i retning nordøst. Langs disse kurvene er det samme nyttenivå for menn og kvinner. Punktene som er tegnet inn er da punktet hvor den marginale substisjonsbrøken er lik helningen på budsjettlinjen. Dette betyr at de kan ikke velge mer av fritid eller konsum i det budsjettet uten å redusere nytte.
 
 \clearpage
 
@@ -687,6 +775,16 @@ ved bruk av denne ligningen så kan vi se kvinners valg av arbeidstimer og friti
 
 [Dette datasettet](https://github.com/uit-sok-2008-h23/uit-sok-2008-h23.github.io/blob/main/assets/women.csv) inneholder informasjon om generøsiteten av foreldrepermisjonsordninger og mødres yrkesdeltakelse i 24 OECD land i 2021. For å gjøre ulike lands rettigheter sammenlignbare presenteres permisjonsordningenes gunstighet ved hjelp av «full rate equivalent» (uker med 100% støtte), hvilket tilsvarer foreldrepermisjonens varighet i uker multiplisert med utbetalingssats i prosent av gjennomsnittlig inntekt. Variabelen «tot_full_rate» beskriver sysselsettingsraten i befolkningen (menn og kvinner). **Bruk datasettet til å lage to diagrammer som viser sammenhengen mellom lengde på betalt foreldrepermisjon og yrkesdeltakelse blant kvinner**. I det ene diagrammet skal du bruke data som beskriver sysselsetting blant kvinner med barn i alderen 0-2 år (fem_emp_rate_0_2), og det andre skal du bruke data på kvinner med barn i alderen 6-14 år (fem_emp_rate_6_14). Diskuter, basert på disse diagrammene og økonomisk teori, følgende påstand: «Gunstige permisjonsordninger ved fødsel sikrer høy yrkesdeltakelse blant kvinner på lang sikt».
 
+```{=tex}
+\begin{wrapfigure}{r}{0.6\textwidth}
+    \centering
+    \includegraphics[width=0.6\textwidth]{pointfig0_2.png}
+    \label{fig:fig3}
+    \centering
+    \includegraphics[width=0.6\textwidth]{pointfig6_14.png}
+    \label{fig:fig4}
+\end{wrapfigure}
+```
 Legger inn matte og figur som viser endring på hvordan reservasjonslønnen synker med tiden og dersom de har krav på jobb tidlig så vil de gå raskere tilbake i arbeid.
 
 ```{=tex}
@@ -694,7 +792,7 @@ Legger inn matte og figur som viser endring på hvordan reservasjonslønnen synk
     \centering
     \includegraphics[width=0.6\textwidth]{foreldrepermisjon.png}
     \caption{Effekten av foreldre permisjon}
-    \label{fig:fig2}
+    \label{fig:fig5}
 \end{wrapfigure}
 ```
 Empiriske funn: Subsidiert barnepass Havnes og Mogstad (2011) Norge • Effekt på kvinners yrkesdeltakelse og barns humankapital • Kvinners yrkesdeltakelse økte • Barnenes utdanningsnivå økte Bauernschuster & Schlotter (2015) & Brillil et al (2016) • Tilgang til offentlig barnehage økte kvinners yrkesdeltakelse
@@ -709,20 +807,6 @@ Empiriske funn: Pappa-perm Ekberg et al (2013) og Avdic & Karim (2018) • Menn 
 
 Konklusjoner fra empiriske studier? • Subsidiert barnepass ser ut å øke kvinners yrkesdeltakelse • Bidrag til å hand om barn hjemme ser ut å ha en negativ effekt på kvinners arbeidstilbud • Foreldrepermisjon som gir foreldre lovbestemt rett å beholde jobben... • Ser ut å ha en positiv effekt på kvinners arbeidskraftdeltagelse og sysselsettingsnivå • Kan ha negativ påvirkning på kvinners lønn • Pappa-perm øker fedres uttak av foreldreledighet. Andre effekter er uklare
 
-```{=tex}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{pointfig0_2.png}
-    \label{fig:fig2}
-\end{figure}
-```
-```{=tex}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{pointfig6_14.png}
-    \label{fig:fig3}
-\end{figure}
-```
 Når man har lang foreldre permisjon så kommer kvinner raskere i arbeid, dette viser jeg i ligning og økonomisk teori som vises i boken.
 
 Når man har rett på samme jobb igjen så går du raskere i arbeid igjen siden din reservasjonslønn ikke synker raskt, og din jobb vil da hyre deg inn på den litt lavere lønnen da tidligere
@@ -744,7 +828,7 @@ Folk må betale pensjon og velferdsordninger til kommende generasjon osv.
     \centering
     \includegraphics[width=\textwidth]{pyramide.png}
     \caption{pyramide}
-    \label{fig:fig4}
+    \label{fig:fig6}
 \end{figure}
 ```
 \clearpage
@@ -760,7 +844,7 @@ I en tid med økende helsetjenestekostnader og begrensede offentlige budsjetter 
     \centering
     \includegraphics[width=\textwidth]{eurostat.png}
     \caption{eurostat}
-    \label{fig:fig5}
+    \label{fig:fig7}
 \end{figure}
 ```
 Lag et punktdiagram som viser sammenhengen mellom andelen av egenbetalinger (Household out-of-pocket payment, på x-aksen) og helsetjenesteforbruk pr. innbygger (Purchasing power standard (PPS) per inhabitant, på y-aksen) i europeiske land. Forklar sammenhengen mellom variablene du ser i figuren og gjør også rede for om det er korrelasjon mellom variablene i dette datasettet.
@@ -780,7 +864,7 @@ Seminar fra mikko. Tegn figuren som vist med dødvektstap når folk bruker flere
     \centering
     \includegraphics[width=\textwidth]{helsetjenester.png}
     \caption{Bruk av helsetjenester ved innføring av helseforsikring}
-    \label{fig:fig5}
+    \label{fig:fig8}
 \end{figure}
 ```
 \clearpage
