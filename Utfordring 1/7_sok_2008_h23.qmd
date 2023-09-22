@@ -108,8 +108,10 @@ plot <- df_04544 %>%
   theme(legend.position = "bottom")+
   labs(x="", y="Arbeidstimer per uke", caption="SSB tabell 04544", color="") +
   scale_x_continuous(expand = c(0, 0), n.breaks = 14, guide = guide_axis(angle=45))
+
 ggsave("df_04544.png", width=8, height=4)
-rm(query, url04544)
+
+rm(query, url04544, df_04544, plot)
 ```
 
 ```{r}
@@ -130,7 +132,7 @@ plot <- df112 %>%
 
 
 ggsave("pointfig0_2.png", width=8, height=4)
-
+rm(plot)
 ```
 
 ```{r}
@@ -147,7 +149,7 @@ plot <- df112 %>%
 
 
 ggsave("pointfig6_14.png", width=8, height=4)
-
+rm(plot, df112)
 ```
 
 ```{r}
@@ -256,12 +258,19 @@ plot <- df_07459 %>%
   ggplot(aes(x = reorder(alder, start_alder),y = value, fill=kjønn, alpha = as.factor(år))) +
   scale_alpha_manual(values = c("2003" = 1, "2023" = 0.5))+
   geom_col(position = "identity") +
-  labs(x="Populasjon", y="", fill="Kjønn", alpha="Year")+
-  coord_flip() 
+  geom_text(aes(label = "Menn", y = -200000, x = "95-99 år"), hjust = 0, vjust = 0, size = 4, color="#0E3F59") +
+  geom_text(aes(label = "Kvinne", y = 150000, x = "95-99 år"), hjust = 0, vjust = 0, size = 4, color="#BC2222") +
+  scale_fill_manual(values = c(Menn = "#0E3F59", Kvinner = "#BC2222")) +
+  labs(x="", y="", fill="", alpha="", title="Norges populasjon", caption="SSB tabell 07459", subtitle="2003, helfargede søyler. 2023, gjennomsiktige")+
+  scale_y_continuous(labels = abs(seq(-300000,300000,by = 75000)),
+                     breaks = seq(-300000,300000,by = 75000))+
+  coord_flip()+
+  theme_bw()+
+  theme(legend.position = "none")
 
 
 ggsave("pyramide.png", width=8, height=8)
-
+rm(df_07459, plot, url, query)
 ```
 
 ```{r}
@@ -283,9 +292,10 @@ eurostat <- eurostat %>%
 
 
 plot <- eurostat %>% 
+  mutate(geo = substr(geo, 1, 2)) %>% 
   ggplot(aes(x=householdexp_percent, y=govexp)) +
   geom_point()+
-  labs(x="Household out-of-pocket payment", y="Purchasing power standard (PPS) per inhabitant", caption = "Eurostat hlth_sha11_hf", title="Egenandeler som andel av totale utgifter helsetjenester")+
+  labs(x="Egenandel andel av totale helsekostnader", y="Kjøpekrafts justerte totale kostnader per innbygger", caption = "Eurostat hlth_sha11_hf", title="Egenandeler som andel av totale utgifter helsetjenester")+
   geom_smooth(method=lm, se=FALSE) +
   theme_bw()+
   geom_text_repel(aes(label=geo))+
@@ -294,8 +304,7 @@ plot <- eurostat %>%
 
 ggsave("eurostat.png", width=8, height=4)
 
-rm(url, query)
-plot
+rm(eurostat, plot)
 ```
 
 ```{python include=FALSE}
@@ -478,6 +487,154 @@ plt.savefig('foreldrepermisjon.png')
 
 ```
 
+```{python include=FALSE}
+x=np.linspace(0.001,100, 100)
+
+
+
+#intersections for the indifference curves and budget line
+int_eq = indiff_x_2(nytte_menn-3.5,.3,.5,c) - budsjett(2000, 20, 20, c)
+int_eq_2 = indiff_x_2(nytte_menn-7,.3,.5,c) - budsjett(2000, 20, 20, c)
+
+int_1 = sp.solve(int_eq, c)
+int_2 = sp.solve(int_eq_2, c)
+
+fig, ax = plt.subplots()
+
+
+
+ax.set_ylabel('Konsum $c$', loc='top')
+ax.set_xlabel('Fritid $l$', loc='right')
+ax.spines['top'].set_color('none')
+ax.spines['right'].set_color('none')   
+
+         
+#no numbers on axis
+ax.xaxis.set_major_formatter(plt.NullFormatter())
+ax.yaxis.set_major_formatter(plt.NullFormatter())
+#no ticks on x or y axis
+ax.xaxis.set_ticks_position('none')
+ax.yaxis.set_ticks_position('none')
+
+x_res=np.linspace(0.001,float(int_1[1]), 100)
+ax.plot(x_res, budsjett(2000, 20, 20, x_res), label='Budsjett', color="black")
+
+
+
+
+ax.plot(x_res, indiff_x_2(nytte_menn-3.5,.3,.5,x_res), color= "black", label="$U_{np}$", ls='dashed')
+
+
+ax.plot(x_res, indiff_x_2(nytte_menn-7,.3,.5,x_res), color= "black", label="$U_{ft}$", ls='dotted')
+
+
+ax.text(70, 30, 'A', fontsize=12)
+
+
+ax.text(int_1[0], budsjett(2000, 20, 20, x_res)[15], 'B', fontsize=12)
+ax.text(int_1[0], budsjett(2000, 20, 20, x_res)[60], 'C', fontsize=12)
+#vlines
+ax.vlines(int_1[0],0,budsjett(2000, 20, 20, x_res)[15], color='grey',ls='dashed')
+ax.vlines(int_1[1],0,budsjett(2000, 20, 20, x_res)[99], color='black',ls='solid')
+#text
+ax.text(int_1[0]-2, -5, '$h_{ft}$', fontsize=12)
+ax.text(int_1[1]-1, -5, '$l=T$', fontsize=12)
+
+
+#vis navnene:
+ax.legend()
+ax.set_xlim(0, 80)
+ax.set_ylim(0, 120)
+#savefig
+plt.savefig('tvunget.png')
+
+
+ax.plot(x_res, indiff_x_2(nytte_menn,.3,.5,x_res), color= "blue", label="$U_{pt}$")
+#scatter at budget
+ax.text(x_1_num_menn, x_2_num_menn, '$D$', fontsize=12)
+#vlines hlines
+ax.vlines(x_1_num_menn,0,x_2_num_menn, color='grey',ls='dashed')
+ax.text(x_1_num_menn-2, -5, '$h_{pt}$', fontsize=12)
+
+
+
+ax.legend()
+
+plt.savefig('deltid.png')
+
+
+```
+
+```{python include=FALSE}
+
+def demand(p):
+    return 200-p
+
+
+#supply linear line at 100
+def supply(p, t):
+    return 100 + t*p
+
+def supply5(p, t):
+    return 50 + t*p
+
+p, t = sp.symbols('p t', real = True, positive = True)
+
+eq_1 = sp.Eq(demand(p), supply(p, t))
+
+
+#plot them
+p = np.linspace(0, 200, 1000)
+
+
+fig, ax = plt.subplots()
+
+ax.set_ylabel('Pris på helsetjenester $p$', loc='top')
+ax.set_xlabel('Forbruk av helsetjenster $q$', loc='right')
+ax.set(xlim=(0,250))
+ax.set(ylim=(0,250))
+ax.spines['top'].set_color('none')
+ax.spines['right'].set_color('none')
+#noticks
+#ax.xaxis.set_ticks_position('none')
+#ax.yaxis.set_ticks_position('none')
+#no ticklabels
+ax.xaxis.set_major_formatter(plt.NullFormatter())
+ax.yaxis.set_major_formatter(plt.NullFormatter())
+
+
+#vline to intersection 1 and 2
+ax.vlines(100,0,100, color='grey',ls='dashed')
+ax.text(100, 5, '$q_1$', fontsize=12)
+ax.vlines(150,0,100, color='grey',ls='dashed')
+ax.text(150, 5, '$q_2$', fontsize=12)
+ax.text(200, 5, '$q_3$', fontsize=12)
+
+
+ax.plot(p, demand(p), label='Etterspørsel')
+ax.text(-26, 47, '$P=0.5$', fontsize=10)
+ax.plot(p, supply(p, 0), label='1 egenandel')
+ax.text(-20, 97, '$P=1$', fontsize=10)
+ax.text(-20, 0, '$P=0$', fontsize=10)
+
+ax.plot(p, supply5(p, 0), label='0.5 egenandel')
+
+#fillbetween above egenandel 0.5 and 1 egenandel from 100 to 150 but only above the ettersporsel line
+ax.fill_between(p, demand(p), supply(p, 0), where= (p>100) & (p<150), color='grey', alpha=0.7, label = "Dødvektstap")
+#fillbetween y0 to y100, and x0 to x100
+ax.fill_between(p, 0, 100, where= (p>0) & (p<100), color='lightblue', alpha=0.9, label = "Opprinnelig forbruk")
+#fillbetween y0 to the etterspørsels line
+ax.fill_between(p, 0, demand(p), where= (p>100) & (p<150), color='red', alpha=0.1)
+
+
+ax.text(2, 55, 'Opprinnelig bruk av helsetjenester \n før innføring av helseforsikring', fontsize=12)
+
+
+ax.legend()
+
+plt.savefig('helsetjenester.png')
+```
+
 \clearpage
 
 ## Utfordring 1.1
@@ -513,8 +670,6 @@ Arbeidstilbud og Arbeidsetterspørsel: Som nevnt i teksten, kan produksjonsfunks
 Endringene i menns og kvinners arbeidstimer over tid kan forklares ved en kombinasjon av individuelle valg (drevet av preferanser for fritid og inntekt), arbeidsgivers valg (drevet av produksjonskostnader og etterspørsel etter arbeidskraft), og institusjonelle faktorer (som tilgjengeligheten av deltidsarbeid og overtidsreguleringer).
 
 ```{=tex}
-
-
 \begin{wrapfigure}{r}{0.6\textwidth}
     \centering
     \includegraphics[width=0.6\textwidth]{preferanser.png}
@@ -610,91 +765,24 @@ I en tid med økende helsetjenestekostnader og begrensede offentlige budsjetter 
 ```
 Lag et punktdiagram som viser sammenhengen mellom andelen av egenbetalinger (Household out-of-pocket payment, på x-aksen) og helsetjenesteforbruk pr. innbygger (Purchasing power standard (PPS) per inhabitant, på y-aksen) i europeiske land. Forklar sammenhengen mellom variablene du ser i figuren og gjør også rede for om det er korrelasjon mellom variablene i dette datasettet.
 
-Det vi ser er at når egenandelen øker, så synker utgiftene til helsetjenester. Den økte egenbetalingen reduserer bruk av helsetjenester, slik at du kan få et underforbruk av helsetjenester slik at problemer blir større over tid. \clearpage \### 1.2.2
+Det vi ser er at når egenandelen øker, så synker utgiftene til helsetjenester. Den økte egenbetalingen reduserer bruk av helsetjenester, slik at du kan få et underforbruk av helsetjenester slik at problemer blir større over tid.
+
+\clearpage
+
+### 1.2.2
 
 Forklar hvordan økt egenbetaling påvirker helsetjenesteforbruk og øker effektiviteten **ved å bruke økonomisk teori om atferdsrisiko** du har lært på kursets forelesninger og videoforelesninger. Bruk diagram(mer) i din besvarelse.
 
 Seminar fra mikko. Tegn figuren som vist med dødvektstap når folk bruker flere helsetjenester enn det de bør, eller når de bruker for mindre pga pris.
 
-```{python include=FALSE}
-
-from IPython.display import display, Math, Latex
-import numpy as np
-from matplotlib import pyplot as plt
-import sympy as sp
-
-
-def demand(p):
-    return 200-p
-
-
-#supply linear line at 100
-def supply(p, t):
-    return 100 + t*p
-
-def supply5(p, t):
-    return 50 + t*p
-
-p, t = sp.symbols('p t', real = True, positive = True)
-
-eq_1 = sp.Eq(demand(p), supply(p, t))
-
-
-#plot them
-p = np.linspace(0, 200, 1000)
-
-
-fig, ax = plt.subplots()
-
-ax.set_ylabel('Pris på helsetjenester $p$', loc='top')
-ax.set_xlabel('Forbruk av helsetjenster $q$', loc='right')
-ax.set(xlim=(0,250))
-ax.set(ylim=(0,250))
-ax.spines['top'].set_color('none')
-ax.spines['right'].set_color('none')
-#noticks
-#ax.xaxis.set_ticks_position('none')
-#ax.yaxis.set_ticks_position('none')
-#no ticklabels
-ax.xaxis.set_major_formatter(plt.NullFormatter())
-ax.yaxis.set_major_formatter(plt.NullFormatter())
-
-
-#vline to intersection 1 and 2
-ax.vlines(100,0,100, color='grey',ls='dashed')
-ax.text(100, 5, '$q_1$', fontsize=12)
-ax.vlines(150,0,100, color='grey',ls='dashed')
-ax.text(150, 5, '$q_2$', fontsize=12)
-ax.text(200, 5, '$q_3$', fontsize=12)
-
-
-ax.plot(p, demand(p), label='Etterspørsel')
-ax.text(-26, 47, '$P=0.5$', fontsize=10)
-ax.plot(p, supply(p, 0), label='1 egenandel')
-ax.text(-20, 97, '$P=1$', fontsize=10)
-ax.text(-20, 0, '$P=0$', fontsize=10)
-
-ax.plot(p, supply5(p, 0), label='0.5 egenandel')
-
-#fillbetween above egenandel 0.5 and 1 egenandel from 100 to 150 but only above the ettersporsel line
-ax.fill_between(p, demand(p), supply(p, 0), where= (p>100) & (p<150), color='grey', alpha=0.7, label = "Dødvektstap")
-#fillbetween y0 to y100, and x0 to x100
-ax.fill_between(p, 0, 100, where= (p>0) & (p<100), color='lightblue', alpha=0.9, label = "Opprinnelig forbruk")
-#fillbetween y0 to the etterspørsels line
-ax.fill_between(p, 0, demand(p), where= (p>100) & (p<150), color='red', alpha=0.1)
-
-
-ax.text(2, 55, 'Opprinnelig bruk av helsetjenester \n før innføring av helseforsikring', fontsize=12)
-
-
-ax.legend()
-
-
-plt.show()
-
-
+```{=tex}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{helsetjenester.png}
+    \caption{Bruk av helsetjenester ved innføring av helseforsikring}
+    \label{fig:fig5}
+\end{figure}
 ```
-
 \clearpage
 
 ### 1.2.3
